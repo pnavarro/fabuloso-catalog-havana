@@ -34,11 +34,11 @@ LIBVIRT_QEMU_CONF = '/etc/libvirt/qemu.conf'
 
 COMPUTE_API_PASTE_CONF = '/etc/nova/api-paste.ini'
 
-neutron_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
+NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
-neutron_CONF = '/etc/neutron/neutron.conf'
+NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
 NOVA_INSTANCES = '/var/lib/nova/instances'
 
@@ -356,18 +356,18 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
 
 
 def configure_neutron(rabbit_password='guest', rabbit_host='127.0.0.1'):
-    utils.set_option(neutron_CONF, 'core_plugin',
+    utils.set_option(NEUTRON_CONF, 'core_plugin',
                      'neutron.plugins.openvswitch.ovs_neutron_plugin.'
                      'OVSneutronPluginV2')
-    utils.set_option(neutron_CONF, 'auth_strategy', 'keystone')
-    utils.set_option(neutron_CONF, 'fake_rabbit', 'False')
-    utils.set_option(neutron_CONF, 'rabbit_password', rabbit_password)
-    utils.set_option(neutron_CONF, 'rabbit_host', rabbit_host)
-    utils.set_option(neutron_CONF, 'notification_driver',
+    utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
+    utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
+    utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(NEUTRON_CONF, 'notification_driver',
                      'nova.openstack.common.notifier.rabbit_notifier')
-    utils.set_option(neutron_CONF, 'notification_topics',
+    utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
-    utils.set_option(neutron_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     neutron_plugin_openvswitch_agent_start()
 
 
