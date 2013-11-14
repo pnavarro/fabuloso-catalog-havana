@@ -17,7 +17,7 @@ from fabric.api import *
 
 import fabuloso.utils as utils
 
-neutron_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
+NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
 DHCP_AGENT_CONF = '/etc/neutron/dhcp_agent.ini'
 
@@ -27,9 +27,9 @@ LBAAS_AGENT_CONF = '/etc/neutron/lbaas_agent.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
-neutron_CONF = '/etc/neutron/neutron.conf'
+NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
-neutron_METADATA_CONF = '/etc/neutron/metadata_agent.ini'
+NEUTRON_METADATA_CONF = '/etc/neutron/metadata_agent.ini'
 
 
 def openvswitch_stop():
@@ -203,6 +203,10 @@ def configure_ovs_plugin_gre(ip_tunnel='127.0.0.1', tunnel_start='1',
                      'sudo /usr/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf',
                      section='AGENT')
+    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+    #                 'neutron.agent.linux.iptables_firewall.'
+    #                 'OVSHybridIptablesFirewallDriver',
+    # section='securitygroup')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -233,6 +237,10 @@ def configure_ovs_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo /usr/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='AGENT')
+    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+    #                 'neutron.agent.linux.iptables_firewall.'
+    #                 'OVSHybridIptablesFirewallDriver',
+    # section='securitygroup')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -262,14 +270,14 @@ def configure_metadata_agent(user='neutron', password='stackops',
                              region='RegionOne', metadata_ip='127.0.0.1',
                              tenant='service'):
     auth_url = 'http://' + auth_host + ':35357/v2.0'
-    utils.set_option(neutron_METADATA_CONF, 'auth_url', auth_url)
-    utils.set_option(neutron_METADATA_CONF, 'auth_region', region)
-    utils.set_option(neutron_METADATA_CONF, 'admin_tenant_name', tenant)
-    utils.set_option(neutron_METADATA_CONF, 'admin_user', user)
-    utils.set_option(neutron_METADATA_CONF, 'admin_password', password)
-    utils.set_option(neutron_METADATA_CONF, 'nova_metadata_ip', metadata_ip)
-    utils.set_option(neutron_METADATA_CONF, 'nova_metadata_port', '8775')
-    utils.set_option(neutron_METADATA_CONF,
+    utils.set_option(NEUTRON_METADATA_CONF, 'auth_url', auth_url)
+    utils.set_option(NEUTRON_METADATA_CONF, 'auth_region', region)
+    utils.set_option(NEUTRON_METADATA_CONF, 'admin_tenant_name', tenant)
+    utils.set_option(NEUTRON_METADATA_CONF, 'admin_user', user)
+    utils.set_option(NEUTRON_METADATA_CONF, 'admin_password', password)
+    utils.set_option(NEUTRON_METADATA_CONF, 'nova_metadata_ip', metadata_ip)
+    utils.set_option(NEUTRON_METADATA_CONF, 'nova_metadata_port', '8775')
+    utils.set_option(NEUTRON_METADATA_CONF,
                      'neutron_metadata_proxy_shared_secret', 'password')
 
 
@@ -290,12 +298,18 @@ def configure_l3_agent(user='neutron', password='stackops',
                      'sudo neutron-rootwrap /etc/neutron/rootwrap.conf')
     utils.set_option(L3_AGENT_CONF, 'metadata_ip', metadata_ip)
     utils.set_option(L3_AGENT_CONF, 'use_namespaces', 'True')
+    utils.set_option(L3_AGENT_CONF, 'interface_driver',
+                     'neutron.agent.linux.interface.OVSInterfaceDrive')
     #utils.set_option(L3_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
 def configure_dhcp_agent(name_server='8.8.8.8'):
     utils.set_option(DHCP_AGENT_CONF, 'use_namespaces', 'True')
     utils.set_option(DHCP_AGENT_CONF, 'dnsmasq_dns_server', name_server)
+    utils.set_option(DHCP_AGENT_CONF, 'dhcp_driver',
+                     'neutron.agent.linux.dhcp.Dnsmasq')
+    utils.set_option(DHCP_AGENT_CONF, 'interface_driver',
+                     'neutron.agent.linux.interface.OVSInterfaceDrive')
     #utils.set_option(DHCP_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
@@ -303,29 +317,29 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service',
                     rabbit_password='guest', rabbit_host='127.0.0.1'):
 
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_tenant_name',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_user',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
                      user, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_password',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_password',
                      password, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_host', auth_host,
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_host', auth_host,
                      section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_port', auth_port,
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_port', auth_port,
                      section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_protocol', auth_protocol,
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol', auth_protocol,
                      section='filter:authtoken')
-    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSneutronPluginV2'
-    utils.set_option(neutron_CONF, 'core_plugin', cp)
-    utils.set_option(neutron_CONF, 'auth_strategy', 'keystone')
-    utils.set_option(neutron_CONF, 'fake_rabbit', 'False')
-    utils.set_option(neutron_CONF, 'rabbit_password', rabbit_password)
-    utils.set_option(neutron_CONF, 'rabbit_host', rabbit_host)
-    utils.set_option(neutron_CONF, 'notification_driver',
+    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
+    utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
+    utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
+    utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(NEUTRON_CONF, 'notification_driver',
                      'neutron.openstack.common.notifier.rabbit_notifier')
-    utils.set_option(neutron_CONF, 'notification_topics',
+    utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
-    utils.set_option(neutron_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
 
 
 def configure_external_bridge(floating_range):

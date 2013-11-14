@@ -195,6 +195,9 @@ def set_config_file(management_ip, user='nova', password='stackops',
          % (auth_port, f))
     sudo("sed -i 's/auth_protocol.*$/auth_protocol = %s/g' %s"
          % (auth_protocol, f))
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    sudo("sed -i 's/auth_uri.*$/auth_uri = %s/g' %s"
+         % (auth_uri, f))
 
     if management_ip is None:
         puts("{error:'Management IP of the node needed as argument'}")
@@ -222,6 +225,7 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('neutron_admin_username', 'neutron')
     set_property('neutron_admin_password', 'stackops')
     set_property('neutron_admin_tenant_name', 'service')
+    set_property('neutron_admin_auth_url', auth_uri)
     set_property('libvirt_vif_driver',
                  'nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver')
     set_property('libvirt_volume_drivers',
@@ -245,6 +249,7 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('lock_path', '/var/lock/nova')
     set_property('root_helper', 'sudo nova-rootwrap /etc/nova/rootwrap.conf')
     set_property('verbose', 'true')
+    set_property('rpc_backend', 'nova.rpc.impl_kombu')
     set_property('notification_driver',
                  'nova.openstack.common.notifier.rabbit_notifier')
     set_property('notification_topics', 'notifications,monitor')

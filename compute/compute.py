@@ -119,6 +119,7 @@ def compute_start():
 def configure_ubuntu_packages():
     """Configure compute packages"""
     package_ensure('python-amqp')
+    package_ensure('python-guestfs')
     package_ensure('python-software-properties')
     package_ensure('ntp')
     package_ensure('kvm')
@@ -133,6 +134,7 @@ def configure_ubuntu_packages():
 def uninstall_ubuntu_packages():
     """Uninstall compute packages"""
     package_clean('python-amqp')
+    package_clean('python-guestfs')
     package_clean('python-software-properties')
     package_clean('ntp')
     package_clean('kvm')
@@ -146,6 +148,7 @@ def uninstall_ubuntu_packages():
 
 def install(cluster=False):
     """Generate compute configuration. Execute on both servers"""
+    sudo ('chmod 0644 /boot/vmlinuz*')
     configure_ubuntu_packages()
     if cluster:
         stop()
@@ -324,7 +327,9 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
                      'nova.image.glance.GlanceImageService')
     utils.set_option(NOVA_COMPUTE_CONF, 'glance_api_servers',
                      '%s:%s' % (glance_host, glance_port))
+    utils.set_option(NOVA_COMPUTE_CONF, 'glance_host', glance_host)
 
+    utils.set_option(NOVA_COMPUTE_CONF, 'rpc_backend', 'nova.rpc.impl_kombu')
     utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_password', rabbit_password)
 
@@ -390,6 +395,10 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo /usr/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='AGENT')
+    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+    #                 'neutron.agent.linux.iptables_firewall.'
+    #                 'OVSHybridIptablesFirewallDriver',
+    # section='securitygroup')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -421,6 +430,10 @@ def configure_ovs_plugin_vlan(br_postfix='bond-vm',
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo /usr/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='AGENT')
+    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+    #                 'neutron.agent.linux.iptables_firewall.'
+    #                 'OVSHybridIptablesFirewallDriver',
+    # section='securitygroup')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')

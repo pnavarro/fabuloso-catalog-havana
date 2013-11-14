@@ -19,6 +19,7 @@ import fabuloso.utils as utils
 
 GLANCE_IMAGES = '/var/lib/glance/images'
 GLANCE_API_CONFIG = '/etc/glance/glance-api.conf'
+GLANCE_API_PASTE_INI = '/etc/glance/glance-api-paste.ini'
 GLANCE_REGISTRY_CONFIG = '/etc/glance/glance-registry.conf'
 GLANCE_REGISTRY_PASTE_INI = '/etc/glance/glance-registry-paste.ini'
 
@@ -113,6 +114,18 @@ def set_config_file(user='glance', password='stackops',
     utils.set_option(GLANCE_REGISTRY_PASTE_INI, 'pipeline',
                      'authtoken context registryapp',
                      section='pipeline:glance-registry-keystone')
+
+    for f in [GLANCE_API_PASTE_INI,
+              GLANCE_REGISTRY_PASTE_INI]:
+        utils.set_option(f, 'auth_host', auth_host,
+                         section='filter:authtoken')
+        utils.set_option(f, 'admin_user', user,
+                         section='filter:authtoken')
+        utils.set_option(f, 'admin_tenant_name', 'service',
+                         section='filter:authtoken')
+        utils.set_option(f, 'admin_password', password,
+                         section='filter:authtoken')
+
 
     sudo("sed -i 's/^#flavor=.*$/flavor=keystone/g' "
          "/etc/glance/glance-api.conf")

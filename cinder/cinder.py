@@ -82,6 +82,8 @@ def set_config_file(user='cinder', password='stackops', auth_host='127.0.0.1',
                      '/etc/cinder/rootwrap.conf')
     utils.set_option(CINDER_CONF, 'auth_strategy', 'keystone')
     utils.set_option(CINDER_CONF, 'iscsi_helper', 'tgtadm')
+    utils.set_option(CINDER_CONF, 'rpc_backend',
+                     'cinder.openstack.common.rpc.impl_kombu')
     utils.set_option(CINDER_CONF, 'rabbit_password', rabbit_password)
     utils.set_option(CINDER_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(CINDER_CONF, 'sql_connection',
@@ -115,6 +117,9 @@ def set_config_file(user='cinder', password='stackops', auth_host='127.0.0.1',
                      section='filter:authtoken')
     utils.set_option(CINDER_API_PASTE_CONF, 'auth_protocol',
                      auth_protocol, section='filter:authtoken')
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    utils.set_option(CINDER_API_PASTE_CONF, 'auth_uri',
+                     auth_uri, section='filter:authtoken')
     sudo('cinder-manage db sync')
 
 

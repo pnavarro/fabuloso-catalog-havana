@@ -18,11 +18,11 @@ from fabuloso import fabuloso
 
 import fabuloso.utils as utils
 
-neutron_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
+NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
-neutron_CONF = '/etc/neutron/neutron.conf'
+NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
 
 def neutron_server_stop():
@@ -66,27 +66,32 @@ def install(cluster=False):
 
 def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service'):
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_tenant_name',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_user',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
                      user, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'admin_password',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_password',
                      password, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_host', auth_host,
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_host', auth_host,
                      section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_port',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_port',
                      auth_port, section='filter:authtoken')
-    utils.set_option(neutron_API_PASTE_CONF, 'auth_protocol',
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol',
                      auth_protocol, section='filter:authtoken')
-    utils.set_option(neutron_CONF, 'notification_driver',
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
+                     auth_uri, section='filter:authtoken')
+    utils.set_option(NEUTRON_CONF, 'notification_driver',
                      'neutron.openstack.common.notifier.rabbit_notifier')
-    utils.set_option(neutron_CONF, 'notification_topics',
+    utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
-    utils.set_option(neutron_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     # Configurtin LBAAS service
-    utils.set_option(neutron_CONF, 'service_plugins',
+    utils.set_option(NEUTRON_CONF, 'service_plugins',
                      'neutron.plugins.services.'
                      'agent_loadbalancer.plugin.LoadBalancerPlugin')
+    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
+    utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
 
 
 def configure_ovs_plugin_vlan(vlan_start='1', vlan_end='4094',
