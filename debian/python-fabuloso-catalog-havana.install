@@ -9,8 +9,8 @@ mysql etc/fabuloso/repos/havana/
 nova etc/fabuloso/repos/havana/
 os etc/fabuloso/repos/havana/
 portal etc/fabuloso/repos/havana/
-quantum etc/fabuloso/repos/havana/
-quantum_plugins etc/fabuloso/repos/havana/
+neutron etc/fabuloso/repos/havana/
+neutron_plugins etc/fabuloso/repos/havana/
 rabbitmq etc/fabuloso/repos/havana/
 vcentercompute etc/fabuloso/repos/havana/
 storage etc/fabuloso/repos/havana/
