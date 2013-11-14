@@ -238,15 +238,16 @@ def remove_repos():
 
 def add_repos():
     """Clean and Add necessary repositories and updates"""
-    #sudo('rm -f /etc/apt/sources.list.d/stackops.list')
-    #sudo('wget -O - http://repos.stackops.net/keys/stackopskey_pub.gpg '
-    #     '| apt-key add -')
-    #sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
-    #     '/etc/apt/sources.list.d/stackops.list')
-    #sudo('apt-get -y update')
+    """Clean and Add necessary repositories and updates"""
+    sudo('rm -f /etc/apt/sources.list.d/stackops.list')
+    sudo('wget -O - http://repos.stackops.net/keys/stackopskey_pub.gpg '
+         '| apt-key add -')
+    sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
+         '/etc/apt/sources.list.d/stackops.list')
+    sudo('apt-get -y update')
     # Setting first to highest priority
-    #sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
-    #     '/etc/apt/sources.list')
+    sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
+         '/etc/apt/sources.list')
     sudo('sed -i /precise-updates/d /etc/apt/sources.list')
     sudo('sed -i /precise-security/d /etc/apt/sources.list')
     sudo('sed -i /archive.ubuntu.com/d /etc/apt/sources.list')
