@@ -91,10 +91,10 @@ def set_config_file(admin_token='password', mysql_username='keystone',
     sudo("keystone-manage db_sync")
 
 
-def _link_user_role(endpoint, admin_token, quantum_user, admin_role,
+def _link_user_role(endpoint, admin_token, neutron_user, admin_role,
                     service_tenant):
     sudo('keystone --endpoint %s --token %s user-role-add --user-id %s '
-         '--role-id %s --tenant-id %s' % (endpoint, admin_token, quantum_user,
+         '--role-id %s --tenant-id %s' % (endpoint, admin_token, neutron_user,
                                           admin_role, service_tenant))
 
 
@@ -294,21 +294,21 @@ def define_glance_service(admin_token='password', region='RegionOne',
                              glance_password, 'service')
 
 
-def define_quantum_service(admin_token='password', region='RegionOne',
+def define_neutron_service(admin_token='password', region='RegionOne',
                            endpoint="'http://localhost:35357/v2.0'",
-                           quantum_public_host='localhost',
-                           quantum_internal_host='localhost',
-                           quantum_user='quantum',
-                           quantum_password='stackops'):
-    quantum_public_url = 'http://' + quantum_public_host + '/network'
-    quantum_internal_url = 'http://' + quantum_internal_host + ':9696'
-    quantum_admin_url = 'http://' + quantum_internal_host + ':9696'
-    _create_service(admin_token, 'quantum', 'network', 'Network '
+                           neutron_public_host='localhost',
+                           neutron_internal_host='localhost',
+                           neutron_user='neutron',
+                           neutron_password='stackops'):
+    neutron_public_url = 'http://' + neutron_public_host + '/network'
+    neutron_internal_url = 'http://' + neutron_internal_host + ':9696'
+    neutron_admin_url = 'http://' + neutron_internal_host + ':9696'
+    _create_service(admin_token, 'neutron', 'network', 'Network '
                                                        'Service', region,
-                    endpoint, quantum_public_url,
-                    quantum_internal_url, quantum_admin_url)
-    _create_user_for_service(endpoint, quantum_user, admin_token,
-                             quantum_password, 'service')
+                    endpoint, neutron_public_url,
+                    neutron_internal_url, neutron_admin_url)
+    _create_user_for_service(endpoint, neutron_user, admin_token,
+                             neutron_password, 'service')
 
 
 def define_cinder_service(admin_token='password', region='RegionOne',
@@ -466,8 +466,8 @@ def configure_services(admin_token="password", public_ip='127.0.0.1',
                                                               public_port),
                     'http://%s:8776/v1/$(tenant_id)s' % internal_ip,
                     'http://%s:8776/v1/$(tenant_id)s' % internal_ip)
-    _create_service(endpoint, admin_token, 'quantum', 'network',
-                    'Quantum Service', region,
+    _create_service(endpoint, admin_token, 'neutron', 'network',
+                    'neutron Service', region,
                     'http://%s:%s/network' % (public_ip, public_port),
                     'http://%s:9696' % internal_ip,
                     'http://%s:9696' % internal_ip)

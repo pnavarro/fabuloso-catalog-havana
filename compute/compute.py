@@ -34,11 +34,11 @@ LIBVIRT_QEMU_CONF = '/etc/libvirt/qemu.conf'
 
 COMPUTE_API_PASTE_CONF = '/etc/nova/api-paste.ini'
 
-QUANTUM_API_PASTE_CONF = '/etc/quantum/api-paste.ini'
+neutron_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
-OVS_PLUGIN_CONF = '/etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini'
+OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
-QUANTUM_CONF = '/etc/quantum/quantum.conf'
+neutron_CONF = '/etc/neutron/neutron.conf'
 
 NOVA_INSTANCES = '/var/lib/nova/instances'
 
@@ -48,7 +48,7 @@ NOVA_VOLUMES = '/var/lib/nova/volumes'
 def stop():
     with settings(warn_only=True):
         openvswitch_stop()
-        quantum_plugin_openvswitch_agent_stop()
+        neutron_plugin_openvswitch_agent_stop()
         ntp_stop()
         compute_stop()
         iscsi_initiator_stop()
@@ -59,7 +59,7 @@ def start():
     ntp_start()
     iscsi_initiator_start()
     openvswitch_start()
-    quantum_plugin_openvswitch_agent_start()
+    neutron_plugin_openvswitch_agent_start()
     compute_start()
 
 
@@ -73,14 +73,14 @@ def openvswitch_start():
     sudo("/etc/init.d/openvswitch-switch start")
 
 
-def quantum_plugin_openvswitch_agent_stop():
+def neutron_plugin_openvswitch_agent_stop():
     with settings(warn_only=True):
-        sudo("service quantum-plugin-openvswitch-agent stop")
+        sudo("service neutron-plugin-openvswitch-agent stop")
 
 
-def quantum_plugin_openvswitch_agent_start():
-    quantum_plugin_openvswitch_agent_stop()
-    sudo("service quantum-plugin-openvswitch-agent start")
+def neutron_plugin_openvswitch_agent_start():
+    neutron_plugin_openvswitch_agent_stop()
+    sudo("service neutron-plugin-openvswitch-agent start")
 
 
 def ntp_stop():
@@ -125,7 +125,7 @@ def configure_ubuntu_packages():
     package_ensure('libvirt-bin')
     package_ensure('pm-utils')
     package_ensure('nova-compute-kvm')
-    package_ensure('quantum-plugin-openvswitch-agent')
+    package_ensure('neutron-plugin-openvswitch-agent')
     package_ensure('open-iscsi')
     package_ensure('autofs')
 
@@ -139,7 +139,7 @@ def uninstall_ubuntu_packages():
     package_clean('libvirt-bin')
     package_clean('pm-utils')
     package_clean('nova-compute-kvm')
-    package_clean('quantum-plugin-openvswitch-agent')
+    package_clean('neutron-plugin-openvswitch-agent')
     package_clean('open-iscsi')
     package_clean('autofs')
 
@@ -149,7 +149,7 @@ def install(cluster=False):
     configure_ubuntu_packages()
     if cluster:
         stop()
-    sudo('update-rc.d quantum-plugin-openvswitch-agent defaults 98 02')
+    sudo('update-rc.d neutron-plugin-openvswitch-agent defaults 98 02')
     sudo('update-rc.d nova-compute defaults 98 02')
 
 
@@ -234,7 +234,7 @@ def configure_libvirt(hostname, shared_storage=False,
 def set_config_file(management_ip='127.0.0.1', user='nova',
                     password='stackops',
                     auth_host='127.0.0.1', auth_port='35357',
-                    auth_protocol='http', quantum_host='127.0.0.1',
+                    auth_protocol='http', neutron_host='127.0.0.1',
                     libvirt_type='kvm', rabbit_host='127.0.0.1',
                     vncproxy_host='127.0.0.1', glance_host='127.0.0.1',
                     glance_port='9292', mysql_username='nova',
@@ -294,20 +294,20 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
                      'nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver')
     utils.set_option(NOVA_COMPUTE_CONF, 'libvirt_use_virtio_for_bridges',
                      'true')
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_auth_strategy',
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_auth_strategy',
                      'keystone')
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_admin_username',
-                     'quantum')
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_admin_password',
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_admin_username',
+                     'neutron')
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_admin_password',
                      'stackops')
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_admin_tenant_name',
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_admin_tenant_name',
                      'service')
     admin_auth_url = 'http://' + auth_host + ':35357/v2.0'
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_admin_auth_url',
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_admin_auth_url',
                      admin_auth_url)
-    quantum_url = 'http://' + quantum_host + ':9696'
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_url',
-                     quantum_url)
+    neutron_url = 'http://' + neutron_host + ':9696'
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_url',
+                     neutron_url)
 
     utils.set_option(NOVA_COMPUTE_CONF, 'novncproxy_base_url',
                      'http://%s:%s/vnc_auto.html'
@@ -330,7 +330,7 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
 
     utils.set_option(NOVA_COMPUTE_CONF, 'ec2_private_dns_show_ip', 'True')
     utils.set_option(NOVA_COMPUTE_CONF, 'network_api_class',
-                     'nova.network.quantumv2.api.API')
+                     'nova.network.neutronv2.api.API')
     utils.set_option(NOVA_COMPUTE_CONF, 'dmz_cidr', '169.254.169.254/32')
     utils.set_option(NOVA_COMPUTE_CONF, 'volume_api_class',
                      'nova.volume.cinder.API')
@@ -340,9 +340,9 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     utils.set_option(NOVA_COMPUTE_CONF, 'allow_same_net_traffic',
                      'True')
     # TOTHINK if its necessary
-    utils.set_option(NOVA_COMPUTE_CONF, 'service_quantum_metadata_proxy',
+    utils.set_option(NOVA_COMPUTE_CONF, 'service_neutron_metadata_proxy',
                      'True')
-    utils.set_option(NOVA_COMPUTE_CONF, 'quantum_metadata_proxy_shared_secret',
+    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_metadata_proxy_shared_secret',
                      'password')
 
     utils.set_option(NOVA_COMPUTE_CONF, 'nfs_mount_point_base', NOVA_VOLUMES)
@@ -350,26 +350,26 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     start()
 
 
-def configure_quantum(rabbit_password='guest', rabbit_host='127.0.0.1'):
-    utils.set_option(QUANTUM_CONF, 'core_plugin',
-                     'quantum.plugins.openvswitch.ovs_quantum_plugin.'
-                     'OVSQuantumPluginV2')
-    utils.set_option(QUANTUM_CONF, 'auth_strategy', 'keystone')
-    utils.set_option(QUANTUM_CONF, 'fake_rabbit', 'False')
-    utils.set_option(QUANTUM_CONF, 'rabbit_password', rabbit_password)
-    utils.set_option(QUANTUM_CONF, 'rabbit_host', rabbit_host)
-    utils.set_option(QUANTUM_CONF, 'notification_driver',
+def configure_neutron(rabbit_password='guest', rabbit_host='127.0.0.1'):
+    utils.set_option(neutron_CONF, 'core_plugin',
+                     'neutron.plugins.openvswitch.ovs_neutron_plugin.'
+                     'OVSneutronPluginV2')
+    utils.set_option(neutron_CONF, 'auth_strategy', 'keystone')
+    utils.set_option(neutron_CONF, 'fake_rabbit', 'False')
+    utils.set_option(neutron_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(neutron_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(neutron_CONF, 'notification_driver',
                      'nova.openstack.common.notifier.rabbit_notifier')
-    utils.set_option(QUANTUM_CONF, 'notification_topics',
+    utils.set_option(neutron_CONF, 'notification_topics',
                      'notifications,monitor')
-    utils.set_option(QUANTUM_CONF, 'default_notification_level', 'INFO')
-    quantum_plugin_openvswitch_agent_start()
+    utils.set_option(neutron_CONF, 'default_notification_level', 'INFO')
+    neutron_plugin_openvswitch_agent_start()
 
 
-def configure_ovs_plugin_gre(mysql_username='quantum',
+def configure_ovs_plugin_gre(mysql_username='neutron',
                              mysql_password='stackops',
                              mysql_host='127.0.0.1', mysql_port='3306',
-                             mysql_schema='quantum'):
+                             mysql_schema='neutron'):
     utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
@@ -388,27 +388,27 @@ def configure_ovs_plugin_gre(mysql_username='quantum',
     utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
                      section='OVS')
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/quantum-rootwrap '
-                     '/etc/quantum/rootwrap.conf', section='AGENT')
+                     'sudo /usr/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='AGENT')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
     openvswitch_start()
-    quantum_plugin_openvswitch_agent_start()
+    neutron_plugin_openvswitch_agent_start()
 
 
 def configure_ovs_plugin_vlan(br_postfix='bond-vm',
                               vlan_start='2',
                               vlan_end='4094',
-                              mysql_quantum_username='quantum',
-                              mysql_quantum_password='stackops',
+                              mysql_neutron_username='neutron',
+                              mysql_neutron_password='stackops',
                               mysql_host='127.0.0.1',
-                              mysql_port='3306', mysql_schema='quantum'):
+                              mysql_port='3306', mysql_schema='neutron'):
     utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
                      utils.sql_connect_string(mysql_host,
-                                              mysql_quantum_password,
+                                              mysql_neutron_password,
                                               mysql_port, mysql_schema,
-                                              mysql_quantum_username),
+                                              mysql_neutron_username),
                      section='DATABASE')
     utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
                      section='DATABASE')
@@ -419,12 +419,12 @@ def configure_ovs_plugin_vlan(br_postfix='bond-vm',
     utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
                      'physnet1:br-%s' % br_postfix, section='OVS')
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/quantum-rootwrap '
-                     '/etc/quantum/rootwrap.conf', section='AGENT')
+                     'sudo /usr/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='AGENT')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
-    quantum_plugin_openvswitch_agent_start()
+    neutron_plugin_openvswitch_agent_start()
 
 
 def get_memory_available():

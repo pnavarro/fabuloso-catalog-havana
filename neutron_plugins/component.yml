@@ -1,10 +1,10 @@
-name: quantum_plugins 
-file: quantum_plugins.py
-description: Operations over Quantum Plugins
+name: neutron_plugins
+file: neutron_plugins.py
+description: Operations over neutron Plugins
 
 Services:
     - name: install
-      description: Install and configure the quantum plugin
+      description: Install and configure the neutron plugin
       methods:
           - compile_datapath
           - install

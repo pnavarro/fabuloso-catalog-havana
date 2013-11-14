@@ -12,7 +12,7 @@ Services:
           - define_nova_service
           - define_ec2_service
           - define_glance_service
-          - define_quantum_service
+          - define_neutron_service
           - define_cinder_service
           - define_portal_service
           - define_accounting_service

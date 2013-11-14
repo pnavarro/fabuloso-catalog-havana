@@ -107,10 +107,10 @@ def setup_cinder(root_pass='stackops', cinder_user='cinder',
                  schema_name='cinder', root_pass=root_pass)
 
 
-def setup_quantum(root_pass='stackops', quantum_user='quantum',
-                  quantum_password='stackops'):
-    setup_schema(username=quantum_user, password=quantum_password,
-                 schema_name='quantum', root_pass=root_pass)
+def setup_neutron(root_pass='stackops', neutron_user='neutron',
+                  neutron_password='stackops'):
+    setup_schema(username=neutron_user, password=neutron_password,
+                 schema_name='neutron', root_pass=root_pass)
 
 
 def setup_portal(root_pass='stackops', portal_user='portal',
@@ -150,10 +150,10 @@ def configure_all_schemas(root_pass='stackops', password='stackops',
                  password=password, drop_previous=False, mysql_host=mysql_host)
     setup_schema(username='cinder', schema_name='cinder', root_pass=root_pass,
                  password=password, drop_previous=False, mysql_host=mysql_host)
-    setup_schema(username='quantum', schema_name='quantum',
+    setup_schema(username='neutron', schema_name='neutron',
                  root_pass=root_pass,
                  password=password, drop_previous=False, mysql_host=mysql_host)
-    setup_schema(username='quantum', schema_name='quantum',
+    setup_schema(username='neutron', schema_name='neutron',
                  root_pass=root_pass,
                  password=password, drop_previous=False, mysql_host=mysql_host)
     setup_schema(username='accounting', schema_name='accounting',

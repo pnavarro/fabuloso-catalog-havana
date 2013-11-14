@@ -17,19 +17,19 @@ from fabric.api import *
 
 import fabuloso.utils as utils
 
-QUANTUM_API_PASTE_CONF = '/etc/quantum/api-paste.ini'
+neutron_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
-DHCP_AGENT_CONF = '/etc/quantum/dhcp_agent.ini'
+DHCP_AGENT_CONF = '/etc/neutron/dhcp_agent.ini'
 
-L3_AGENT_CONF = '/etc/quantum/l3_agent.ini'
+L3_AGENT_CONF = '/etc/neutron/l3_agent.ini'
 
-LBAAS_AGENT_CONF = '/etc/quantum/lbaas_agent.ini'
+LBAAS_AGENT_CONF = '/etc/neutron/lbaas_agent.ini'
 
-OVS_PLUGIN_CONF = '/etc/quantum/plugins/openvswitch/ovs_quantum_plugin.ini'
+OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
-QUANTUM_CONF = '/etc/quantum/quantum.conf'
+neutron_CONF = '/etc/neutron/neutron.conf'
 
-QUANTUM_METADATA_CONF = '/etc/quantum/metadata_agent.ini'
+neutron_METADATA_CONF = '/etc/neutron/metadata_agent.ini'
 
 
 def openvswitch_stop():
@@ -42,72 +42,72 @@ def openvswitch_start():
     sudo("service openvswitch-switch start")
 
 
-def quantum_plugin_openvswitch_agent_stop():
+def neutron_plugin_openvswitch_agent_stop():
     with settings(warn_only=True):
-        sudo("service quantum-plugin-openvswitch-agent stop")
+        sudo("service neutron-plugin-openvswitch-agent stop")
 
 
-def quantum_plugin_openvswitch_agent_start():
-    quantum_plugin_openvswitch_agent_stop()
-    sudo("service quantum-plugin-openvswitch-agent start")
+def neutron_plugin_openvswitch_agent_start():
+    neutron_plugin_openvswitch_agent_stop()
+    sudo("service neutron-plugin-openvswitch-agent start")
 
 
-def quantum_dhcp_agent_stop():
+def neutron_dhcp_agent_stop():
     with settings(warn_only=True):
-        sudo("service quantum-dhcp-agent stop")
+        sudo("service neutron-dhcp-agent stop")
 
 
-def quantum_dhcp_agent_start():
-    quantum_dhcp_agent_stop()
-    sudo("service quantum-dhcp-agent start")
+def neutron_dhcp_agent_start():
+    neutron_dhcp_agent_stop()
+    sudo("service neutron-dhcp-agent start")
 
 
-def quantum_l3_agent_stop():
+def neutron_l3_agent_stop():
     with settings(warn_only=True):
-        sudo("service quantum-l3-agent stop")
+        sudo("service neutron-l3-agent stop")
 
 
-def quantum_l3_agent_start():
-    quantum_l3_agent_stop()
-    sudo("service quantum-l3-agent start")
+def neutron_l3_agent_start():
+    neutron_l3_agent_stop()
+    sudo("service neutron-l3-agent start")
 
 
-def quantum_metadata_agent_stop():
-    sudo("service quantum-metadata-agent stop")
+def neutron_metadata_agent_stop():
+    sudo("service neutron-metadata-agent stop")
 
 
-def quantum_metadata_agent_start():
-    quantum_metadata_agent_stop()
+def neutron_metadata_agent_start():
+    neutron_metadata_agent_stop()
     with settings(warn_only=True):
-        sudo("service quantum-metadata-agent start")
+        sudo("service neutron-metadata-agent start")
 
 
-def quantum_lbaas_agent_stop():
-    sudo("service quantum-lbaas-agent stop")
+def neutron_lbaas_agent_stop():
+    sudo("service neutron-lbaas-agent stop")
 
 
-def quantum_lbaas_agent_start():
-    quantum_lbaas_agent_stop()
+def neutron_lbaas_agent_start():
+    neutron_lbaas_agent_stop()
     with settings(warn_only=True):
-        sudo("service quantum-lbaas-agent start")
+        sudo("service neutron-lbaas-agent start")
 
 
 def stop():
     openvswitch_stop()
-    quantum_plugin_openvswitch_agent_stop()
-    quantum_dhcp_agent_stop()
-    quantum_l3_agent_stop()
-    quantum_metadata_agent_stop()
-    quantum_lbaas_agent_stop()
+    neutron_plugin_openvswitch_agent_stop()
+    neutron_dhcp_agent_stop()
+    neutron_l3_agent_stop()
+    neutron_metadata_agent_stop()
+    neutron_lbaas_agent_stop()
 
 
 def start():
     openvswitch_start()
-    quantum_plugin_openvswitch_agent_start()
-    quantum_dhcp_agent_start()
-    quantum_l3_agent_start()
-    quantum_metadata_agent_start()
-    quantum_lbaas_agent_start()
+    neutron_plugin_openvswitch_agent_start()
+    neutron_dhcp_agent_start()
+    neutron_l3_agent_start()
+    neutron_metadata_agent_start()
+    neutron_lbaas_agent_start()
 
 
 def compile_datapath():
@@ -117,34 +117,34 @@ def compile_datapath():
 
 
 def configure_ubuntu_packages():
-    """Configure openvwsitch and quantum packages"""
+    """Configure openvwsitch and neutron packages"""
     package_ensure('python-amqp')
     package_ensure('vlan')
     package_ensure('bridge-utils')
     package_ensure('python-cliff')
     package_ensure('openvswitch-datapath-dkms')
     package_ensure('openvswitch-switch')
-    package_ensure('quantum-plugin-openvswitch-agent')
-    package_ensure('quantum-l3-agent')
-    package_ensure('quantum-dhcp-agent')
-    package_ensure('quantum-lbaas-agent')
+    package_ensure('neutron-plugin-openvswitch-agent')
+    package_ensure('neutron-l3-agent')
+    package_ensure('neutron-dhcp-agent')
+    package_ensure('neutron-lbaas-agent')
     package_ensure('haproxy')
-    package_ensure('quantum-metadata-agent')
+    package_ensure('neutron-metadata-agent')
     package_ensure('python-pyparsing')
     package_ensure('python-mysqldb')
 
 
 def uninstall_ubuntu_packages():
-    """Uninstall openvswitch and quantum packages"""
+    """Uninstall openvswitch and neutron packages"""
     package_clean('python-amqp')
     package_clean('openvswitch-datapath-dkms')
     package_clean('openvswitch-switch')
     package_clean('python-cliff')
-    package_clean('quantum-plugin-openvswitch-agent')
-    package_clean('quantum-l3-agent')
-    package_clean('quantum-dhcp-agent')
-    package_clean('quantum-metadata-agent')
-    package_clean('quantum-lbaas-agent')
+    package_clean('neutron-plugin-openvswitch-agent')
+    package_clean('neutron-l3-agent')
+    package_clean('neutron-dhcp-agent')
+    package_clean('neutron-metadata-agent')
+    package_clean('neutron-lbaas-agent')
     package_clean('haproxy')
     package_clean('python-pyparsing')
     package_clean('python-mysqldb')
@@ -159,7 +159,7 @@ def configure_network():
 
 
 def install(cluster=False, iface_ex=None):
-    """Generate quantum configuration. Execute on both servers"""
+    """Generate neutron configuration. Execute on both servers"""
     if iface_ex is None:
         puts("{'error':'You need to pass the physical interface as argument "
              "of the external bridge'}")
@@ -173,15 +173,15 @@ def install(cluster=False, iface_ex=None):
         sudo('ovs-vsctl del-br br-ex')
     sudo('ovs-vsctl add-br br-ex')
     sudo('ovs-vsctl add-port br-ex %s' % iface_ex)
-    sudo('update-rc.d quantum-dhcp-agent defaults 98 02')
-    sudo('update-rc.d quantum-l3-agent defaults 98 02')
-    sudo('update-rc.d quantum-plugin-openvswitch-agent defaults 98 02')
+    sudo('update-rc.d neutron-dhcp-agent defaults 98 02')
+    sudo('update-rc.d neutron-l3-agent defaults 98 02')
+    sudo('update-rc.d neutron-plugin-openvswitch-agent defaults 98 02')
 
 
 def configure_ovs_plugin_gre(ip_tunnel='127.0.0.1', tunnel_start='1',
-                             tunnel_end='1000', mysql_username='quantum',
+                             tunnel_end='1000', mysql_username='neutron',
                              mysql_password='stackops', mysql_host='127.0.0.1',
-                             mysql_port='3306', mysql_schema='quantum'):
+                             mysql_port='3306', mysql_schema='neutron'):
     utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
@@ -200,22 +200,22 @@ def configure_ovs_plugin_gre(ip_tunnel='127.0.0.1', tunnel_start='1',
     utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
                      section='OVS')
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/quantum-rootwrap '
-                     '/etc/quantum/rootwrap.conf',
+                     'sudo /usr/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf',
                      section='AGENT')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
     openvswitch_start()
-    quantum_plugin_openvswitch_agent_start()
+    neutron_plugin_openvswitch_agent_start()
 
 
 def configure_ovs_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
                               vlan_start='1', vlan_end='4094',
-                              mysql_username='quantum',
+                              mysql_username='neutron',
                               mysql_password='stackops',
                               mysql_host='127.0.0.1',
-                              mysql_port='3306', mysql_schema='quantum'):
+                              mysql_port='3306', mysql_schema='neutron'):
     utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
                      utils.sql_connect_string(mysql_host,
                                               mysql_password,
@@ -231,8 +231,8 @@ def configure_ovs_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
     utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
                      'physnet1:br-%s' % iface_bridge, section='OVS')
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/quantum-rootwrap '
-                     '/etc/quantum/rootwrap.conf', section='AGENT')
+                     'sudo /usr/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='AGENT')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -241,45 +241,45 @@ def configure_ovs_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
     sudo('ovs-vsctl add-br br-%s' % br_postfix)
     sudo('ovs-vsctl add-port br-%s %s' % (br_postfix, iface_bridge))
     openvswitch_start()
-    quantum_plugin_openvswitch_agent_start()
+    neutron_plugin_openvswitch_agent_start()
 
 
 def configure_lbaas_agent():
-    sudo('mkdir -p /etc/quantum/plugins/services/agent_loadbalancer/')
+    sudo('mkdir -p /etc/neutron/plugins/services/agent_loadbalancer/')
     utils.set_option(LBAAS_AGENT_CONF, 'use_namespaces', 'True')
     utils.set_option(LBAAS_AGENT_CONF, 'interface_driver',
-                     'quantum.agent.linux.interface.OVSInterfaceDriver')
+                     'neutron.agent.linux.interface.OVSInterfaceDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'device_driver',
-                     'quantum.plugins.services.agent_loadbalancer.drivers.'
+                     'neutron.plugins.services.agent_loadbalancer.drivers.'
                      'haproxy.namespace_driver.HaproxyNSDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'user_group', 'haproxy')
     #utils.set_option(LBAAS_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
 
-def configure_metadata_agent(user='quantum', password='stackops',
+def configure_metadata_agent(user='neutron', password='stackops',
                              auth_host='127.0.0.1',
                              region='RegionOne', metadata_ip='127.0.0.1',
                              tenant='service'):
     auth_url = 'http://' + auth_host + ':35357/v2.0'
-    utils.set_option(QUANTUM_METADATA_CONF, 'auth_url', auth_url)
-    utils.set_option(QUANTUM_METADATA_CONF, 'auth_region', region)
-    utils.set_option(QUANTUM_METADATA_CONF, 'admin_tenant_name', tenant)
-    utils.set_option(QUANTUM_METADATA_CONF, 'admin_user', user)
-    utils.set_option(QUANTUM_METADATA_CONF, 'admin_password', password)
-    utils.set_option(QUANTUM_METADATA_CONF, 'nova_metadata_ip', metadata_ip)
-    utils.set_option(QUANTUM_METADATA_CONF, 'nova_metadata_port', '8775')
-    utils.set_option(QUANTUM_METADATA_CONF,
-                     'quantum_metadata_proxy_shared_secret', 'password')
+    utils.set_option(neutron_METADATA_CONF, 'auth_url', auth_url)
+    utils.set_option(neutron_METADATA_CONF, 'auth_region', region)
+    utils.set_option(neutron_METADATA_CONF, 'admin_tenant_name', tenant)
+    utils.set_option(neutron_METADATA_CONF, 'admin_user', user)
+    utils.set_option(neutron_METADATA_CONF, 'admin_password', password)
+    utils.set_option(neutron_METADATA_CONF, 'nova_metadata_ip', metadata_ip)
+    utils.set_option(neutron_METADATA_CONF, 'nova_metadata_port', '8775')
+    utils.set_option(neutron_METADATA_CONF,
+                     'neutron_metadata_proxy_shared_secret', 'password')
 
 
-def configure_l3_agent(user='quantum', password='stackops',
+def configure_l3_agent(user='neutron', password='stackops',
                        auth_host='127.0.0.1',
                        region='RegionOne', metadata_ip='127.0.0.1',
                        tenant='service'):
     utils.set_option(L3_AGENT_CONF, 'debug', 'True')
     utils.set_option(L3_AGENT_CONF, 'interface_driver',
-                     'quantum.agent.linux.interface.OVSInterfaceDriver')
+                     'neutron.agent.linux.interface.OVSInterfaceDriver')
     auth_url = 'http://' + auth_host + ':35357/v2.0'
     utils.set_option(L3_AGENT_CONF, 'auth_url', auth_url)
     utils.set_option(L3_AGENT_CONF, 'auth_region', region)
@@ -287,7 +287,7 @@ def configure_l3_agent(user='quantum', password='stackops',
     utils.set_option(L3_AGENT_CONF, 'admin_user', user)
     utils.set_option(L3_AGENT_CONF, 'admin_password', password)
     utils.set_option(L3_AGENT_CONF, 'root_helper',
-                     'sudo quantum-rootwrap /etc/quantum/rootwrap.conf')
+                     'sudo neutron-rootwrap /etc/neutron/rootwrap.conf')
     utils.set_option(L3_AGENT_CONF, 'metadata_ip', metadata_ip)
     utils.set_option(L3_AGENT_CONF, 'use_namespaces', 'True')
     #utils.set_option(L3_AGENT_CONF, 'ovs_use_veth', 'True')
@@ -299,33 +299,33 @@ def configure_dhcp_agent(name_server='8.8.8.8'):
     #utils.set_option(DHCP_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
-def set_config_file(user='quantum', password='stackops', auth_host='127.0.0.1',
+def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service',
                     rabbit_password='guest', rabbit_host='127.0.0.1'):
 
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'admin_tenant_name',
+    utils.set_option(neutron_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'admin_user',
+    utils.set_option(neutron_API_PASTE_CONF, 'admin_user',
                      user, section='filter:authtoken')
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'admin_password',
+    utils.set_option(neutron_API_PASTE_CONF, 'admin_password',
                      password, section='filter:authtoken')
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'auth_host', auth_host,
+    utils.set_option(neutron_API_PASTE_CONF, 'auth_host', auth_host,
                      section='filter:authtoken')
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'auth_port', auth_port,
+    utils.set_option(neutron_API_PASTE_CONF, 'auth_port', auth_port,
                      section='filter:authtoken')
-    utils.set_option(QUANTUM_API_PASTE_CONF, 'auth_protocol', auth_protocol,
+    utils.set_option(neutron_API_PASTE_CONF, 'auth_protocol', auth_protocol,
                      section='filter:authtoken')
-    cp = 'quantum.plugins.openvswitch.ovs_quantum_plugin.OVSQuantumPluginV2'
-    utils.set_option(QUANTUM_CONF, 'core_plugin', cp)
-    utils.set_option(QUANTUM_CONF, 'auth_strategy', 'keystone')
-    utils.set_option(QUANTUM_CONF, 'fake_rabbit', 'False')
-    utils.set_option(QUANTUM_CONF, 'rabbit_password', rabbit_password)
-    utils.set_option(QUANTUM_CONF, 'rabbit_host', rabbit_host)
-    utils.set_option(QUANTUM_CONF, 'notification_driver',
-                     'quantum.openstack.common.notifier.rabbit_notifier')
-    utils.set_option(QUANTUM_CONF, 'notification_topics',
+    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSneutronPluginV2'
+    utils.set_option(neutron_CONF, 'core_plugin', cp)
+    utils.set_option(neutron_CONF, 'auth_strategy', 'keystone')
+    utils.set_option(neutron_CONF, 'fake_rabbit', 'False')
+    utils.set_option(neutron_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(neutron_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(neutron_CONF, 'notification_driver',
+                     'neutron.openstack.common.notifier.rabbit_notifier')
+    utils.set_option(neutron_CONF, 'notification_topics',
                      'notifications,monitor')
-    utils.set_option(QUANTUM_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(neutron_CONF, 'default_notification_level', 'INFO')
 
 
 def configure_external_bridge(floating_range):
@@ -337,7 +337,7 @@ def configure_external_bridge(floating_range):
 def get_net_id(network_name, admin_user, admin_tenant_name, admin_pass,
                auth_url):
 
-    stdout = sudo("quantum --os-auth-url %s --os-username %s --os-password %s "
+    stdout = sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
                   "--os-tenant-name %s net-list | grep %s | awk '/ | "
                   "/ { print $2 }'"
                   % (auth_url, admin_user, admin_pass, admin_tenant_name,
@@ -348,7 +348,7 @@ def get_net_id(network_name, admin_user, admin_tenant_name, admin_pass,
 
 def get_subnet_id(subnetwork_name, admin_user, admin_tenant_name, admin_pass,
                   auth_url):
-    stdout = sudo("quantum --os-auth-url %s --os-username %s --os-password %s "
+    stdout = sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
                   "--os-tenant-name %s subnet-list | grep %s | awk '/ | / "
                   "{ print $2 }'"
                   % (auth_url, admin_user, admin_pass, admin_tenant_name,
@@ -359,7 +359,7 @@ def get_subnet_id(subnetwork_name, admin_user, admin_tenant_name, admin_pass,
 
 def get_router_id(router_name, admin_user, admin_tenant_name, admin_pass,
                   auth_url):
-    stdout = sudo("quantum --os-auth-url %s --os-username %s --os-password %s "
+    stdout = sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
                   "--os-tenant-name %s router-list | grep %s | awk '/ | / "
                   "{ print $2 }'"
                   % (auth_url, admin_user, admin_pass, admin_tenant_name,
@@ -375,7 +375,7 @@ def configure_external_network(floating_start, floating_end, floating_gw,
                                auth_url='http://localhost:5000/v2.0',
                                external_network_name='ext-net'):
 
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name '
          '%s net-create %s --provider:network_type local '
          '--router:external=True'
@@ -385,25 +385,25 @@ def configure_external_network(floating_start, floating_end, floating_gw,
     external_network_id = get_net_id(external_network_name, admin_user,
                                      admin_tenant_name,
                                      admin_pass, auth_url)
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s subnet-create --ip_version 4 --allocation-pool '
          'start=%s,end=%s --gateway %s --name %s %s %s --enable_dhcp=False'
          % (auth_url, admin_user, admin_pass, admin_tenant_name,
             floating_start, floating_end, floating_gw, external_network_name,
             external_network_id, floating_range))
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s router-create provider-router'
          % (auth_url, admin_user, admin_pass, admin_tenant_name))
     router_id = get_router_id('provider-router', admin_user, admin_tenant_name,
                               admin_pass, auth_url)
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s router-gateway-set %s %s'
          % (auth_url, admin_user, admin_pass, admin_tenant_name, router_id,
             external_network_name))
 
 
-def add_route_to_quantum_host(private_range, quantum_host):
-    sudo('route add -net %s gw %s' % (private_range, quantum_host))
+def add_route_to_neutron_host(private_range, neutron_host):
+    sudo('route add -net %s gw %s' % (private_range, neutron_host))
 
 
 def configure_default_private_network(private_range="10.0.0.0/16",
@@ -415,14 +415,14 @@ def configure_default_private_network(private_range="10.0.0.0/16",
                                       network_name='default-private',
                                       dns_list='8.8.8.8 8.8.4.4'):
 
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s net-create %s'
          % (auth_url, admin_user, admin_pass, admin_tenant_name,
             network_name))
     private_network_id = get_net_id(network_name, admin_user,
                                     admin_tenant_name, admin_pass, auth_url)
 
-    sc = ('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sc = ('neutron --os-auth-url %s --os-username %s --os-password %s '
           '--os-tenant-name %s subnet-create --ip_version 4 %s %s --gateway '
           '%s --dns_nameservers list=true %s --name %s'
           % (auth_url, admin_user, admin_pass, admin_tenant_name,
@@ -433,7 +433,7 @@ def configure_default_private_network(private_range="10.0.0.0/16",
                                       admin_tenant_name, admin_pass, auth_url)
     router_id = get_router_id('provider-router', admin_user, admin_tenant_name,
                               admin_pass, auth_url)
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s router-interface-add %s %s'
          % (auth_url, admin_user, admin_pass, admin_tenant_name, router_id,
             private_subnet_id))
@@ -442,7 +442,7 @@ def configure_default_private_network(private_range="10.0.0.0/16",
 def delete_network(network_id, admin_user='admin', admin_tenant_name='admin',
                    admin_pass='stackops',
                    auth_url='http://localhost:5000/v2.0'):
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s net-delete %s'
          % (auth_url, admin_user, admin_pass, admin_tenant_name, network_id))
 
@@ -450,13 +450,13 @@ def delete_network(network_id, admin_user='admin', admin_tenant_name='admin',
 def delete_router(router_id, admin_user='admin', admin_tenant_name='admin',
                   admin_pass='stackops',
                   auth_url='http://localhost:5000/v2.0'):
-    sudo('quantum --os-auth-url %s --os-username %s --os-password %s '
+    sudo('neutron --os-auth-url %s --os-username %s --os-password %s '
          '--os-tenant-name %s router-delete %s'
          % (auth_url, admin_user, admin_pass, admin_tenant_name, router_id))
 
 
-def configure_metadata(private_cidr='10.0.0.0/16', quantum_host='127.0.0.1'):
-    sudo('route add -net %s gw %s' % (private_cidr, quantum_host))
+def configure_metadata(private_cidr='10.0.0.0/16', neutron_host='127.0.0.1'):
+    sudo('route add -net %s gw %s' % (private_cidr, neutron_host))
 
 
 def configure_iptables(public_ip):

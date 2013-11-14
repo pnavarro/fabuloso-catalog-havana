@@ -12,7 +12,7 @@ Services:
           - configure_vhost_net
           - configure_libvirt
           - set_config_file
-          - configure_quantum
+          - configure_neutron
           - configure_ovs_plugin_vlan
           - start
     - name: configure_ovs_plugin_vlan

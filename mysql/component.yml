@@ -17,7 +17,7 @@ Services:
           - setup_nova
           - setup_glance
           - setup_cinder
-          - setup_quantum
+          - setup_neutron
           - setup_automation
     - name: set_keystone
       description: Creates a new database for keystone and grants privileges on it
@@ -35,10 +35,10 @@ Services:
       description: Creates a new database for cinder and grants privileges on it
       methods:
           - setup_cinder
-    - name: set_quantum
-      description: Creates a new database for quantum and grants privileges on it
+    - name: set_neutron
+      description: Creates a new database for neutron and grants privileges on it
       methods:
-          - setup_quantum
+          - setup_neutron
     - name: set_portal
       description: Creates a new database for portal and grants privileges on it
       methods:
