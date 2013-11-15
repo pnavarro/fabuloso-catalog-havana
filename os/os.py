@@ -238,13 +238,14 @@ def remove_repos():
 
 def add_repos():
     """Clean and Add necessary repositories and updates"""
-    """Clean and Add necessary repositories and updates"""
-    sudo('rm -f /etc/apt/sources.list.d/stackops.list')
+
+    # Install Stackops repos keys
     sudo('wget -O - http://repos.stackops.net/keys/stackopskey_pub.gpg '
          '| apt-key add -')
-    sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
-         '/etc/apt/sources.list.d/stackops.list')
-    sudo('apt-get -y update')
+
+    # Install Ubuntu cloud repos keys
+    package_ensure('ubuntu-cloud-keyring')
+
     # Setting first to highest priority
     sudo('echo "deb http://repos.stackops.net/ havana-dev main" >> '
          '/etc/apt/sources.list')
@@ -260,7 +261,6 @@ def add_repos():
     sudo('echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu '
          'precise-updates/havana main" >> /etc/apt/sources.list')
     sudo('apt-get -y update')
-    package_ensure('ubuntu-cloud-keyring')
 
 
 def configure_bond(bond_name=None, bond_slaves=None,
