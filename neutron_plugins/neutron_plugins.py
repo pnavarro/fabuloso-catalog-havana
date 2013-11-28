@@ -340,6 +340,21 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
+                     tenant, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_user',
+                     user, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_password',
+                     password, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_host', auth_host,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_port', auth_port,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
 
 
 def configure_external_bridge(floating_range):

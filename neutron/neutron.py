@@ -92,6 +92,20 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'agent_loadbalancer.plugin.LoadBalancerPlugin')
     cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
+                     tenant, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_user',
+                     user, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_password',
+                     password, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_host', auth_host,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_port', auth_port,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
 
 
 def configure_ovs_plugin_vlan(vlan_start='1', vlan_end='4094',
