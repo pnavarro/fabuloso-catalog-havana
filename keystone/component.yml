@@ -51,6 +51,10 @@ Services:
       description: Register the OpenStack's Swift service and endpoint
       methods:
         - define_swift_service
+    - name: register_designate
+      description: Register the OpenStack's DNAAS service and endpoint
+      methods:
+        - define_dnsaas_service
     - name: validate
       description: Validates keystone to operate with it and check the minimum requirements necessaries
       methods:

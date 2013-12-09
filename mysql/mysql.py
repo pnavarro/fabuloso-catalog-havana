@@ -137,6 +137,13 @@ def setup_automation(root_pass='stackops', automation_user='automation',
     setup_schema(username=automation_user, password=automation_password,
                  schema_name='stackopshead', root_pass=root_pass)
 
+def setup_designate(root_pass='stackops', designate_user='designate',
+                     powerdns_user= 'powerdns', designate_password='stackops'):
+    setup_schema(username=designate_user, password=designate_password,
+                 schema_name='designate', root_pass=root_pass)
+    setup_schema(username=powerdns_user, password=designate_password,
+                 schema_name='powerdns', root_pass=root_pass)
+
 
 def configure_all_schemas(root_pass='stackops', password='stackops',
                           mysql_host='127.0.0.1', host_allowed='127.0.0.1'):

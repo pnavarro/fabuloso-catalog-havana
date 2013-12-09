@@ -54,6 +54,7 @@ def configure(cluster=False,
               portal_internal_host="127.0.0.1",
               activity_internal_host="127.0.0.1",
               chargeback_internal_host="127.0.0.1",
+              dnsaas_internal_host="127.0.0.1",
               common_name='127.0.0.1'):
     """Generate apache configuration. Execute on both servers"""
     ec2_internal_url="http://" + ec2_internal_host + ":8773/services/Cloud"
@@ -67,6 +68,7 @@ def configure(cluster=False,
                           ":8080/activity"
     chargeback_internal_url="http://" + chargeback_internal_host + \
                             ":8080/chargeback"
+    dnsaas_internal_url="http://" + dnsaas_internal_host + ":9001/v1"
     configure_ubuntu_packages()
     if cluster:
         stop()
@@ -80,12 +82,13 @@ def configure(cluster=False,
                      keystone_internal_url, glance_internal_url,
                      cinder_internal_url, neutron_internal_url,
                      portal_internal_url, activity_internal_url,
-                     chargeback_internal_url, None, common_name)
+                     chargeback_internal_url, dnsaas_internal_url,
+                     None, common_name)
     configure_apache_ssl(ec2_internal_url, compute_internal_url,
                          keystone_internal_url, glance_internal_url,
                          cinder_internal_url, neutron_internal_url,
                          portal_internal_url, activity_internal_url,
-                         chargeback_internal_url,
+                         chargeback_internal_url,dnsaas_internal_url,
                          None, common_name)
     create_certs(common_name)
     start()
@@ -101,6 +104,7 @@ def configure_apache(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
                      activity_internal_url="http://127.0.0.1:8080/activity",
                      chargeback_internal_url="http://127.0.0.1:8080/"
                                              "chargeback",
+                     dnsaas_internal_url="http://127.0.0.1:9001/v1",
                      apache_conf=None, common_name='127.0.0.1'):
     if apache_conf is None:
         apache_conf = text_strip_margin('''
@@ -142,6 +146,9 @@ def configure_apache(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
         |   ProxyPass /chargeback %s
         |   ProxyPassReverse /chargeback %s
         |
+        |   ProxyPass /dnsaas %s
+        |   ProxyPassReverse /dnsaas %s
+        |
         |
         |   RewriteEngine on
         |   ReWriteCond %%{SERVER_PORT} !^443\$
@@ -166,7 +173,8 @@ def configure_apache(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
                 portal_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
                 activity_internal_url, activity_internal_url,
-                chargeback_internal_url, chargeback_internal_url))
+                chargeback_internal_url, chargeback_internal_url,
+                dnsaas_internal_url))
     sudo('''echo '%s' > /etc/apache2/sites-available/default''' % apache_conf)
 
 
@@ -182,6 +190,7 @@ def configure_apache_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
                                                "/activity",
                          chargeback_internal_url="http://127.0.0.1:8080"
                                                  "/chargeback",
+                         dnsaas_internal_url="http://127.0.0.1:9001/v1",
                          apache_conf=None, common_name='127.0.0.1'):
     if apache_conf is None:
         apache_conf = text_strip_margin('''
@@ -224,6 +233,8 @@ def configure_apache_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
         |   ProxyPass /chargeback %s
         |   ProxyPassReverse /chargeback %s
         |
+        |   ProxyPass /dnsaas %s
+        |   ProxyPassReverse /dnsaas %s
         |
         |   <Proxy *>
         |       Order allow,deny
@@ -263,7 +274,8 @@ def configure_apache_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
                 portal_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
                 activity_internal_url, activity_internal_url,
-                chargeback_internal_url, chargeback_internal_url))
+                chargeback_internal_url, chargeback_internal_url,
+                dnsaas_internal_url))
     sudo('''echo '%s' > /etc/apache2/sites-available/default-ssl'''
          % apache_conf)
 
