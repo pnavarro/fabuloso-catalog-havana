@@ -1,0 +1,14 @@
+name: compute
+file: dnsaas.py
+description: DNS as a service
+
+Services:
+    - name: install
+      description: Install and configure component file
+      methods:
+          - install
+          - start
+    - name: start
+      description: Start Nova-compute service
+      methods: 
+          - start

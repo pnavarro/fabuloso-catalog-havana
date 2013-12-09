@@ -19,6 +19,7 @@ Services:
           - setup_cinder
           - setup_neutron
           - setup_automation
+          - setup_designate
     - name: set_keystone
       description: Creates a new database for keystone and grants privileges on it
       methods:
@@ -55,6 +56,10 @@ Services:
       description: Creates a new database for automation and grants privileges on it
       methods:
           - setup_automation
+    - name: set_designate
+      description: Creates a new database for designate and grants privileges on it
+      methods:
+          - setup_designate
     - name: validate
       description: Validates main database to operate with it
       methods:
