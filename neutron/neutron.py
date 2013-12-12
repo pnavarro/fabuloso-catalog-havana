@@ -67,7 +67,8 @@ def install(cluster=False):
 
 
 def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
-                    auth_port='35357', auth_protocol='http', tenant='service'):
+                    auth_port='35357', auth_protocol='http', tenant='service',
+                    rabbit_password='guest', rabbit_host='127.0.0.1'):
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
@@ -83,6 +84,9 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     auth_uri = 'http://' + auth_host + ':5000/v2.0'
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
                      auth_uri, section='filter:authtoken')
+    utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
+    utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(NEUTRON_CONF, 'notification_driver',
                      'neutron.openstack.common.notifier.rpc_notifier')
     utils.set_option(NEUTRON_CONF, 'notification_topics',
@@ -108,6 +112,7 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
                      section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'allow_overlapping_ips', 'True')
 
 
 def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
