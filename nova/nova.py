@@ -209,6 +209,9 @@ def set_config_file(management_ip, user='nova', password='stackops',
                  'nova.scheduler.filter_scheduler.FilterScheduler')
     set_property('compute_scheduler_driver',
                      'nova.scheduler.filter_scheduler.FilterScheduler')
+    set_property('scheduler_default_filters',
+                 'AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,'
+                 'RamFilter,ComputeFilter')
     set_property('auth_strategy', 'keystone')
     #set_property('allow_admin_api', 'true')
     #set_property('use_deprecated_auth', 'false')
@@ -237,8 +240,10 @@ def set_config_file(management_ip, user='nova', password='stackops',
                  'nfs=nova.virt.libvirt.volume_nfs.NfsVolumeDriver"')
     set_property('linuxnet_interface_driver',
                  'nova.network.linux_net.LinuxOVSInterfaceDriver')
+    # Change for havana to use the neutron fw and security group
     set_property('firewall_driver',
-                 'nova.virt.libvirt.firewall.IptablesFirewallDriver')
+                 'nova.virt.firewall.NoopFirewallDriver')
+    set_property('security_group_api', 'neutron')
     set_property('volume_api_class', 'nova.volume.cinder.API')
     set_property('cinder_catalog_info', 'volume:cinder:internalURL')
     set_property('image_service', 'nova.image.glance.GlanceImageService')

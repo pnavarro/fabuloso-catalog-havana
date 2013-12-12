@@ -38,6 +38,8 @@ NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
+ML2_PLUGIN_CONF = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+
 NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
 NOVA_INSTANCES = '/var/lib/nova/instances'
@@ -311,12 +313,11 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     neutron_url = 'http://' + neutron_host + ':9696'
     utils.set_option(NOVA_COMPUTE_CONF, 'neutron_url',
                      neutron_url)
-
     utils.set_option(NOVA_COMPUTE_CONF, 'novncproxy_base_url',
                      'http://%s:%s/vnc_auto.html'
                      % (vncproxy_host, vncproxy_port))
     utils.set_option(NOVA_COMPUTE_CONF, 'vncserver_listen', '0.0.0.0')
-    utils.set_option(NOVA_COMPUTE_CONF, 'vnc_enable', 'true')
+    utils.set_option(NOVA_COMPUTE_CONF, 'vnc_enabled', 'true')
     utils.set_option(NOVA_COMPUTE_CONF, 'vncserver_proxyclient_address',
                      management_ip)
 
@@ -356,9 +357,8 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
 
 
 def configure_neutron(rabbit_password='guest', rabbit_host='127.0.0.1'):
-    utils.set_option(NEUTRON_CONF, 'core_plugin',
-                     'neutron.plugins.openvswitch.ovs_neutron_plugin.'
-                     'OVSneutronPluginV2')
+    cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+    utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
     utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
     utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
@@ -406,34 +406,43 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
     neutron_plugin_openvswitch_agent_start()
 
 
-def configure_ovs_plugin_vlan(br_postfix='bond-vm',
-                              vlan_start='2',
-                              vlan_end='4094',
-                              mysql_neutron_username='neutron',
-                              mysql_neutron_password='stackops',
+def configure_ml2_plugin_vlan(br_postfix='bond-vm',
+                              vlan_start='2', vlan_end='4094',
+                              mysql_username='neutron',
+                              mysql_password='stackops',
                               mysql_host='127.0.0.1',
                               mysql_port='3306', mysql_schema='neutron'):
-    utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
-                     utils.sql_connect_string(mysql_host,
-                                              mysql_neutron_password,
-                                              mysql_port, mysql_schema,
-                                              mysql_neutron_username),
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_type',
-                     'vlan', section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
-                     % (vlan_start, vlan_end), section='OVS')
+    # TODO Fix that when ml2-neutron-plugin will be added in icehouse
+    sudo('mkdir -p /etc/neutron/plugins/ml2')
+    sudo('touch %s' % ML2_PLUGIN_CONF)
+    sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    # ML2 section
+    utils.set_option(ML2_PLUGIN_CONF, 'tenant_network_types', 'vlan',
+                     section='ml2')
+    utils.set_option(ML2_PLUGIN_CONF, 'type_drivers',
+                     'local,flat,vlan,gre,vxlan', section='ml2')
+    utils.set_option(ML2_PLUGIN_CONF, 'mechanism_drivers',
+                     'openvswitch,linuxbridge', section='ml2')
+    # ml2_type_vlan section
+    utils.set_option(ML2_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+                     % (vlan_start, vlan_end), section='ml2_type_vlan')
     utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
-                     'physnet1:br-%s' % br_postfix, section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/neutron-rootwrap '
-                     '/etc/neutron/rootwrap.conf', section='AGENT')
-    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
-    #                 'neutron.agent.linux.iptables_firewall.'
-    #                 'OVSHybridIptablesFirewallDriver',
-    # section='securitygroup')
+                     'physnet1:br-%s' % br_postfix, section='ml2_type_vlan')
+    # database section
+    utils.set_option(ML2_PLUGIN_CONF, 'connection',
+                     utils.sql_connect_string(mysql_host, mysql_password,
+                                              mysql_port, mysql_schema,
+                                              mysql_username),
+                     section='database')
+    # security group section
+    utils.set_option(ML2_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
+    utils.set_option(ML2_PLUGIN_CONF, 'root_helper',
+                     'sudo /usr/local/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='agent')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')

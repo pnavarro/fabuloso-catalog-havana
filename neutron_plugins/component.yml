@@ -9,16 +9,16 @@ Services:
           - compile_datapath
           - install
           - set_config_file
-          - configure_ovs_plugin_vlan
+          - configure_ml2_plugin_vlan
           - configure_l3_agent
           - configure_dhcp_agent
           - configure_metadata_agent
           - configure_lbaas_agent
           - start
-    - name: configure_ovs_plugin_vlan
-      description: Configure the vlan for OpenVSwitch
+    - name: configure_ml2_plugin_vlan
+      description: Configure the ml2 plugin vlan
       methods:
-          - configure_ovs_plugin_vlan
+          - configure_ml2_plugin_vlan
     - name: configure_network_agents
       description: Configures the network node agents
       methods:

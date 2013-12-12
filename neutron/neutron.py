@@ -22,6 +22,8 @@ NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
+ML2_PLUGIN_CONF = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+
 NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
 
@@ -82,15 +84,15 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
                      auth_uri, section='filter:authtoken')
     utils.set_option(NEUTRON_CONF, 'notification_driver',
-                     'neutron.openstack.common.notifier.rabbit_notifier')
+                     'neutron.openstack.common.notifier.rpc_notifier')
     utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     # Configurtin LBAAS service
     utils.set_option(NEUTRON_CONF, 'service_plugins',
-                     'neutron.plugins.services.'
-                     'agent_loadbalancer.plugin.LoadBalancerPlugin')
-    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
+                     'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
+                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin')
+    cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
                      tenant, section='keystone_authtoken')
@@ -108,26 +110,40 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      section='keystone_authtoken')
 
 
-def configure_ovs_plugin_vlan(vlan_start='1', vlan_end='4094',
+def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
                               mysql_username='neutron',
                               mysql_password='stackops',
                               mysql_host='127.0.0.1',
                               mysql_port='3306', mysql_schema='neutron'):
-    utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
+    # TODO Fix that when ml2-neutron-plugin will be added in icehouse
+    sudo('mkdir -p /etc/neutron/plugins/ml2')
+    sudo('touch %s' % ML2_PLUGIN_CONF)
+    sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    # ML2 section
+    utils.set_option(ML2_PLUGIN_CONF, 'tenant_network_types', 'vlan',
+                     section='ml2')
+    utils.set_option(ML2_PLUGIN_CONF, 'type_drivers',
+                     'local,flat,vlan,gre,vxlan', section='ml2')
+    utils.set_option(ML2_PLUGIN_CONF, 'mechanism_drivers',
+                     'openvswitch,linuxbridge', section='ml2')
+    # ml2_type_vlan section
+    utils.set_option(ML2_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+                     % (vlan_start, vlan_end), section='ml2_type_vlan')
+    # database section
+    utils.set_option(ML2_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
                                               mysql_username),
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_type', 'vlan',
-                     section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
-                     % (vlan_start, vlan_end), section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/neutron-rootwrap '
-                     '/etc/neutron/rootwrap.conf',
-                     section='AGENT')
+                     section='database')
+    # security group section
+    utils.set_option(ML2_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
+    utils.set_option(ML2_PLUGIN_CONF, 'root_helper',
+                     'sudo /usr/local/bin/neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='agent')
 
 
 def validate_database(database_type, username, password, host, port,
