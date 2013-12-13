@@ -196,8 +196,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
     sudo("sed -i 's/auth_protocol.*$/auth_protocol = %s/g' %s"
          % (auth_protocol, f))
     auth_uri = 'http://' + auth_host + ':5000/v2.0'
-    sudo("sed -i 's/auth_uri.*$/auth_uri = %s/g' %s"
-         % (auth_uri, f))
+    #sudo("sed -i 's/auth_uri.*$/auth_uri = %s/g' %s"
+    #     % (auth_uri, f))
 
     if management_ip is None:
         puts("{error:'Management IP of the node needed as argument'}")

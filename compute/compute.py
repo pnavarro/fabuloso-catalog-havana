@@ -414,33 +414,32 @@ def configure_ml2_plugin_vlan(br_postfix='bond-vm',
                               mysql_port='3306', mysql_schema='neutron'):
     # TODO Fix that when ml2-neutron-plugin will be added in icehouse
     sudo('mkdir -p /etc/neutron/plugins/ml2')
-    sudo('touch %s' % ML2_PLUGIN_CONF)
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
     # ML2 section
-    utils.set_option(ML2_PLUGIN_CONF, 'tenant_network_types', 'vlan',
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vlan',
                      section='ml2')
-    utils.set_option(ML2_PLUGIN_CONF, 'type_drivers',
+    utils.set_option(OVS_PLUGIN_CONF, 'type_drivers',
                      'local,flat,vlan,gre,vxlan', section='ml2')
-    utils.set_option(ML2_PLUGIN_CONF, 'mechanism_drivers',
+    utils.set_option(OVS_PLUGIN_CONF, 'mechanism_drivers',
                      'openvswitch,linuxbridge', section='ml2')
     # ml2_type_vlan section
-    utils.set_option(ML2_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
                      % (vlan_start, vlan_end), section='ml2_type_vlan')
     utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
                      'physnet1:br-%s' % br_postfix, section='ml2_type_vlan')
     # database section
-    utils.set_option(ML2_PLUGIN_CONF, 'connection',
+    utils.set_option(OVS_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
                                               mysql_username),
                      section='database')
     # security group section
-    utils.set_option(ML2_PLUGIN_CONF, 'firewall_driver',
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
                      'neutron.agent.linux.iptables_firewall.'
                      'OVSHybridIptablesFirewallDriver',
                      section='securitygroup')
     # agent section
-    utils.set_option(ML2_PLUGIN_CONF, 'root_helper',
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo /usr/local/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='agent')
     with settings(warn_only=True):

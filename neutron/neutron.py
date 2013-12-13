@@ -82,8 +82,8 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol',
                      auth_protocol, section='filter:authtoken')
     auth_uri = 'http://' + auth_host + ':5000/v2.0'
-    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
-                     auth_uri, section='filter:authtoken')
+    #utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
+    #                 auth_uri, section='filter:authtoken')
     utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
     utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
     utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
@@ -122,31 +122,30 @@ def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
                               mysql_port='3306', mysql_schema='neutron'):
     # TODO Fix that when ml2-neutron-plugin will be added in icehouse
     sudo('mkdir -p /etc/neutron/plugins/ml2')
-    sudo('touch %s' % ML2_PLUGIN_CONF)
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
     # ML2 section
-    utils.set_option(ML2_PLUGIN_CONF, 'tenant_network_types', 'vlan',
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vlan',
                      section='ml2')
-    utils.set_option(ML2_PLUGIN_CONF, 'type_drivers',
+    utils.set_option(OVS_PLUGIN_CONF, 'type_drivers',
                      'local,flat,vlan,gre,vxlan', section='ml2')
-    utils.set_option(ML2_PLUGIN_CONF, 'mechanism_drivers',
+    utils.set_option(OVS_PLUGIN_CONF, 'mechanism_drivers',
                      'openvswitch,linuxbridge', section='ml2')
     # ml2_type_vlan section
-    utils.set_option(ML2_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
                      % (vlan_start, vlan_end), section='ml2_type_vlan')
     # database section
-    utils.set_option(ML2_PLUGIN_CONF, 'connection',
+    utils.set_option(OVS_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
                                               mysql_username),
                      section='database')
     # security group section
-    utils.set_option(ML2_PLUGIN_CONF, 'firewall_driver',
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
                      'neutron.agent.linux.iptables_firewall.'
                      'OVSHybridIptablesFirewallDriver',
                      section='securitygroup')
     # agent section
-    utils.set_option(ML2_PLUGIN_CONF, 'root_helper',
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo /usr/local/bin/neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='agent')
 
