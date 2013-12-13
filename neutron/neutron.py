@@ -123,6 +123,12 @@ def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
     # TODO Fix that when ml2-neutron-plugin will be added in icehouse
     sudo('mkdir -p /etc/neutron/plugins/ml2')
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2_type_vlan] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [agent] >> %s' % OVS_PLUGIN_CONF)
     # ML2 section
     utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vlan',
                      section='ml2')
