@@ -85,7 +85,8 @@ def neutron_metadata_agent_start():
 
 
 def neutron_lbaas_agent_stop():
-    sudo("service neutron-lbaas-agent stop")
+    with settings(warn_only=True):
+        sudo("service neutron-lbaas-agent stop")
 
 
 def neutron_lbaas_agent_start():
@@ -312,8 +313,6 @@ def configure_l3_agent(user='neutron', password='stackops',
                      'sudo neutron-rootwrap /etc/neutron/rootwrap.conf')
     utils.set_option(L3_AGENT_CONF, 'metadata_ip', metadata_ip)
     utils.set_option(L3_AGENT_CONF, 'use_namespaces', 'True')
-    utils.set_option(L3_AGENT_CONF, 'interface_driver',
-                     'neutron.agent.linux.interface.OVSInterfaceDrive')
     #utils.set_option(L3_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
@@ -323,7 +322,7 @@ def configure_dhcp_agent(name_server='8.8.8.8'):
     utils.set_option(DHCP_AGENT_CONF, 'dhcp_driver',
                      'neutron.agent.linux.dhcp.Dnsmasq')
     utils.set_option(DHCP_AGENT_CONF, 'interface_driver',
-                     'neutron.agent.linux.interface.OVSInterfaceDrive')
+                     'neutron.agent.linux.interface.OVSInterfaceDriver')
     #utils.set_option(DHCP_AGENT_CONF, 'ovs_use_veth', 'True')
 
 

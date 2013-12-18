@@ -7,7 +7,6 @@ Services:
       description: Install and configure component file
       methods:
           - install
-          - configure_forwarding
           - configure_ntp
           - configure_vhost_net
           - configure_libvirt

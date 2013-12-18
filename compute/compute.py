@@ -124,11 +124,11 @@ def configure_ubuntu_packages():
     package_ensure('python-guestfs')
     package_ensure('python-software-properties')
     package_ensure('ntp')
-    package_ensure('kvm')
-    package_ensure('libvirt-bin')
     package_ensure('pm-utils')
     package_ensure('nova-compute-kvm')
     package_ensure('neutron-plugin-openvswitch-agent')
+    package_ensure('openvswitch-switch')
+    package_ensure('openvswitch-datapath-dkms')
     package_ensure('open-iscsi')
     package_ensure('autofs')
 
@@ -139,11 +139,11 @@ def uninstall_ubuntu_packages():
     package_clean('python-guestfs')
     package_clean('python-software-properties')
     package_clean('ntp')
-    package_clean('kvm')
-    package_clean('libvirt-bin')
     package_clean('pm-utils')
     package_clean('nova-compute-kvm')
     package_clean('neutron-plugin-openvswitch-agent')
+    package_clean('openvswitch-switch')
+    package_clean('openvswitch-datapath-dkms')
     package_clean('open-iscsi')
     package_clean('autofs')
 
@@ -170,9 +170,13 @@ def configure_network(iface_bridge='eth1', br_postfix='bond-vm',
                                       'other_config:bond-detect-mode=miimon '
                                       'other_config:bond-miimon-interval=100',
                       network_restart=False):
-
+    # Disable packet destination filter
+    sudo("sed -i -r 's/^\s*#(net\.ipv4\.conf\.all\.rp_filter=1.*)"
+         "/\\0/' /etc/sysctl.conf")
+    sudo("sed -i -r 's/^\s*#(net\.ipv4\.conf\.default\.rp_filter=1.*)"
+         "/\\0/' /etc/sysctl.conf")
     openvswitch_start()
-    configure_forwarding()
+    #configure_forwarding()
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-%s' % br_postfix)
     sudo('ovs-vsctl add-br br-%s' % br_postfix)
@@ -393,7 +397,7 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
     utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
                      section='OVS')
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/neutron-rootwrap '
+                     'sudo neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='AGENT')
     #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
     #                 'neutron.agent.linux.iptables_firewall.'
@@ -446,7 +450,7 @@ def configure_ml2_plugin_vlan(br_postfix='bond-vm',
                      section='securitygroup')
     # agent section
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/local/bin/neutron-rootwrap '
+                     'sudo neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='agent')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
