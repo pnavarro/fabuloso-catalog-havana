@@ -18,6 +18,10 @@ Services:
       description: Configure the ml2 plugin vlan
       methods:
           - configure_ml2_plugin_vlan
+    - name: configure_fwaas_service
+      description: Configure the fwaas service
+      methods:
+          - configure_fwaas_service
     - name: validate
       description: Validates cinder to operate with it
       methods:

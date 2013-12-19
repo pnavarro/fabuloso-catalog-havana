@@ -273,8 +273,8 @@ def configure_lbaas_agent():
     utils.set_option(LBAAS_AGENT_CONF, 'interface_driver',
                      'neutron.agent.linux.interface.OVSInterfaceDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'device_driver',
-                     'neutron.plugins.services.agent_loadbalancer.drivers.'
-                     'haproxy.namespace_driver.HaproxyNSDriver')
+                     'neutron.services.loadbalancer.drivers.haproxy.'
+                     'namespace_driver.HaproxyNSDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'user_group', 'haproxy')
     #utils.set_option(LBAAS_AGENT_CONF, 'ovs_use_veth', 'True')
 
@@ -328,7 +328,10 @@ def configure_dhcp_agent(name_server='8.8.8.8'):
 
 def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service',
-                    rabbit_password='guest', rabbit_host='127.0.0.1'):
+                    rabbit_password='guest', rabbit_host='127.0.0.1',
+                    mysql_username='neutron', mysql_password='stackops',
+                    mysql_schema='neutron', mysql_host='127.0.0.1',
+                    mysql_port='3306'):
 
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
@@ -342,6 +345,9 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol', auth_protocol,
                      section='filter:authtoken')
+    auth_uri = 'http://' + auth_host + ':5000'
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
+                     auth_uri, section='filter:authtoken')
     cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
@@ -354,6 +360,9 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
+        mysql_host, mysql_password, mysql_port, mysql_schema, mysql_username),
+                     section='database')
     utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
                      tenant, section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'admin_user',
@@ -369,6 +378,21 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'allow_overlapping_ips', 'True')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+
+def configure_fwaas_service():
+    utils.set_option(NEUTRON_CONF, 'service_plugins',
+                     'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
+                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin')
+    utils.set_option(NEUTRON_CONF, 'driver',
+                     'neutron.services.firewall.drivers.linux.'
+                     'iptables_fwaas.IptablesFwaasDriver', section='fwaas')
+    utils.set_option(NEUTRON_CONF, 'enabled', 'True', section='fwaas')
+    start()
 
 
 def configure_external_bridge(floating_range):

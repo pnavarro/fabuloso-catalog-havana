@@ -68,7 +68,10 @@ def install(cluster=False):
 
 def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service',
-                    rabbit_password='guest', rabbit_host='127.0.0.1'):
+                    rabbit_password='guest', rabbit_host='127.0.0.1',
+                    mysql_username='neutron', mysql_password='stackops',
+                    mysql_schema='neutron', mysql_host='127.0.0.1',
+                    mysql_port='3306'):
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
@@ -98,6 +101,9 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'neutron.services.firewall.fwaas_plugin.FirewallPlugin')
     cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
+        mysql_host, mysql_password, mysql_port, mysql_schema, mysql_username),
+                     section='database')
     utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
                      tenant, section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'admin_user',
@@ -107,8 +113,6 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_CONF, 'auth_host', auth_host,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'auth_port', auth_port,
-                     section='keystone_authtoken')
-    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
                      section='keystone_authtoken')

@@ -246,11 +246,8 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
                     auth_protocol='http', neutron_host='127.0.0.1',
                     libvirt_type='kvm', rabbit_host='127.0.0.1',
                     vncproxy_host='127.0.0.1', glance_host='127.0.0.1',
-                    glance_port='9292', mysql_username='nova',
-                    mysql_password='stackops', mysql_schema='nova',
-                    mysql_host='127.0.0.1', tenant='service',
-                    mysql_port='3306', rabbit_password='guest',
-                    vncproxy_port='6080'):
+                    glance_port='9292',tenant='service',
+                    rabbit_password='guest', vncproxy_port='6080'):
 
     if management_ip is None:
         puts("{error:'Management IP of the node needed as argument'}")
@@ -268,11 +265,6 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
                      section='filter:authtoken')
     utils.set_option(COMPUTE_API_PASTE_CONF, 'auth_protocol',
                      auth_protocol, section='filter:authtoken')
-
-    utils.set_option(NOVA_COMPUTE_CONF, 'sql_connection',
-                     utils.sql_connect_string(mysql_host, mysql_password,
-                                              mysql_port, mysql_schema,
-                                              mysql_username))
     utils.set_option(NOVA_COMPUTE_CONF, 'start_guests_on_host_boot', 'false')
     utils.set_option(NOVA_COMPUTE_CONF, 'resume_guests_state_on_host_boot',
                      'true')
@@ -337,7 +329,10 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     utils.set_option(NOVA_COMPUTE_CONF, 'rpc_backend', 'nova.rpc.impl_kombu')
     utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_password', rabbit_password)
-
+    # Change for havana to use the neutron fw and security group
+    utils.set_option(NOVA_COMPUTE_CONF, 'firewall_driver',
+                     'nova.virt.firewall.NoopFirewallDriver')
+    utils.set_option(NOVA_COMPUTE_CONF, 'security_group_api','neutron')
     utils.set_option(NOVA_COMPUTE_CONF, 'ec2_private_dns_show_ip', 'True')
     utils.set_option(NOVA_COMPUTE_CONF, 'network_api_class',
                      'nova.network.neutronv2.api.API')
@@ -360,7 +355,14 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     start()
 
 
-def configure_neutron(rabbit_password='guest', rabbit_host='127.0.0.1'):
+def configure_neutron(user='neutron', password='stackops',
+                      auth_host='127.0.0.1', auth_port='35357',
+                      auth_protocol='http', tenant='service',
+                      rabbit_password='guest', rabbit_host='127.0.0.1',
+                      neutron_mysql_username='neutron',
+                      neutron_mysql_password='stackops',
+                      neutron_mysql_schema='neutron', mysql_host='127.0.0.1',
+                      mysql_port='3306'):
     cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
@@ -372,6 +374,36 @@ def configure_neutron(rabbit_password='guest', rabbit_host='127.0.0.1'):
     utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
+    utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
+        mysql_host, neutron_mysql_password, mysql_port, neutron_mysql_schema, neutron_mysql_username),
+                     section='database')
+    utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
+                     tenant, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_user',
+                     user, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'admin_password',
+                     password, section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_host', auth_host,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_port', auth_port,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    utils.set_option(NEUTRON_CONF, 'auth_url', auth_uri,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
+                     tenant, section='filter:authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
+                     user, section='filter:authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_password',
+                     password, section='filter:authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_host', auth_host,
+                     section='filter:authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_port',
+                     auth_port, section='filter:authtoken')
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol',
+                     auth_protocol, section='filter:authtoken')
     neutron_plugin_openvswitch_agent_start()
 
 
