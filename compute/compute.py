@@ -280,13 +280,15 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     utils.set_option(NOVA_COMPUTE_CONF, 'root_helper',
                      'sudo nova-rootwrap /etc/nova/rootwrap.conf')
     utils.set_option(NOVA_COMPUTE_CONF, 'verbose', 'true')
+    utils.set_option(NOVA_COMPUTE_CONF, 'rpc_backend', 'nova.rpc.impl_kombu')
+    utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_password', rabbit_password)
     utils.set_option(NOVA_COMPUTE_CONF, 'notification_driver',
-                     'nova.openstack.common.notifier.rabbit_notifier')
+                     'nova.openstack.common.notifier.rpc_notifier')
     utils.set_option(NOVA_COMPUTE_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NOVA_COMPUTE_CONF, 'default_notification_level', 'INFO')
     utils.set_option(NOVA_COMPUTE_CONF, 'my_ip', management_ip)
-
     utils.set_option(NOVA_COMPUTE_CONF, 'connection_type', 'libvirt')
     utils.set_option(NOVA_COMPUTE_CONF, 'libvirt_type', libvirt_type)
     utils.set_option(NOVA_COMPUTE_CONF, 'libvirt_ovs_bridge', 'br-int')
@@ -325,10 +327,6 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
     utils.set_option(NOVA_COMPUTE_CONF, 'glance_api_servers',
                      '%s:%s' % (glance_host, glance_port))
     utils.set_option(NOVA_COMPUTE_CONF, 'glance_host', glance_host)
-
-    utils.set_option(NOVA_COMPUTE_CONF, 'rpc_backend', 'nova.rpc.impl_kombu')
-    utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_host', rabbit_host)
-    utils.set_option(NOVA_COMPUTE_CONF, 'rabbit_password', rabbit_password)
     # Change for havana to use the neutron fw and security group
     utils.set_option(NOVA_COMPUTE_CONF, 'firewall_driver',
                      'nova.virt.firewall.NoopFirewallDriver')
@@ -344,12 +342,6 @@ def set_config_file(management_ip='127.0.0.1', user='nova',
 
     utils.set_option(NOVA_COMPUTE_CONF, 'allow_same_net_traffic',
                      'True')
-    # TOTHINK if its necessary
-    utils.set_option(NOVA_COMPUTE_CONF, 'service_neutron_metadata_proxy',
-                     'True')
-    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_metadata_proxy_shared_secret',
-                     'password')
-
     utils.set_option(NOVA_COMPUTE_CONF, 'nfs_mount_point_base', NOVA_VOLUMES)
 
     start()
@@ -370,7 +362,7 @@ def configure_neutron(user='neutron', password='stackops',
     utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
     utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(NEUTRON_CONF, 'notification_driver',
-                     'nova.openstack.common.notifier.rabbit_notifier')
+                     'nova.openstack.common.notifier.rpc_notifier')
     utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
@@ -442,12 +434,11 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
     neutron_plugin_openvswitch_agent_start()
 
 
-def configure_ml2_plugin_vlan(br_postfix='bond-vm',
-                              vlan_start='2', vlan_end='4094',
-                              mysql_username='neutron',
-                              mysql_password='stackops',
-                              mysql_host='127.0.0.1',
-                              mysql_port='3306', mysql_schema='neutron'):
+def configure_ml2_plugin_vlan(br_postfix='bond-vm', vlan_start='2',
+                              vlan_end='4094', neutron_mysql_username='neutron',
+                              neutron_mysql_password='stackops',
+                              mysql_host='127.0.0.1', mysql_port='3306',
+                              neutron_mysql_schema='neutron'):
     # TODO Fix that when ml2-neutron-plugin will be added in icehouse
     sudo('mkdir -p /etc/neutron/plugins/ml2')
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
@@ -471,9 +462,9 @@ def configure_ml2_plugin_vlan(br_postfix='bond-vm',
                      'physnet1:br-%s' % br_postfix, section='ml2_type_vlan')
     # database section
     utils.set_option(OVS_PLUGIN_CONF, 'connection',
-                     utils.sql_connect_string(mysql_host, mysql_password,
-                                              mysql_port, mysql_schema,
-                                              mysql_username),
+                     utils.sql_connect_string(mysql_host, neutron_mysql_password,
+                                              mysql_port, neutron_mysql_schema,
+                                              neutron_mysql_username),
                      section='database')
     # security group section
     utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',

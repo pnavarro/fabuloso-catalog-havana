@@ -26,6 +26,10 @@ Services:
           - configure_dhcp_agent
           - configure_metadata_agent
           - configure_lbaas_agent
+    - name: configure_fwaas_service
+      description: Configure the fwaas service
+      methods:
+          - configure_fwaas_service
     - name: start
       description: Starts the plugin
       methods: 

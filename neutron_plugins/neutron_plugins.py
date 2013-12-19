@@ -254,8 +254,8 @@ def configure_ml2_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
                      section='securitygroup')
     # agent section
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/local/bin/neutron-rootwrap '
-                     '/etc/neutron/rootwrap.conf', section='agent')
+                     'sudo neutron-rootwrap /etc/neutron/rootwrap.conf',
+                     section='agent')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -383,6 +383,7 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'neutron.agent.linux.iptables_firewall.'
                      'OVSHybridIptablesFirewallDriver',
                      section='securitygroup')
+
 
 def configure_fwaas_service():
     utils.set_option(NEUTRON_CONF, 'service_plugins',

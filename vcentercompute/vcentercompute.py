@@ -205,7 +205,7 @@ def set_config_file(user='nova',
                      'sudo nova-rootwrap /etc/nova/rootwrap.conf')
     utils.set_option(NOVA_COMPUTE_CONF, 'verbose', 'true')
     utils.set_option(NOVA_COMPUTE_CONF, 'notification_driver',
-                     'nova.openstack.common.notifier.rabbit_notifier')
+                     'nova.openstack.common.notifier.rpc_notifier')
     utils.set_option(NOVA_COMPUTE_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NOVA_COMPUTE_CONF, 'default_notification_level', 'INFO')
@@ -243,12 +243,6 @@ def set_config_file(user='nova',
 
     utils.set_option(NOVA_COMPUTE_CONF, 'allow_same_net_traffic',
                      'True')
-    # TOTHINK if its necessary
-    utils.set_option(NOVA_COMPUTE_CONF, 'service_neutron_metadata_proxy',
-                     'True')
-    utils.set_option(NOVA_COMPUTE_CONF, 'neutron_metadata_proxy_shared_secret',
-                     'password')
-
     start()
 
 

@@ -97,14 +97,13 @@ def set_config_file(user='cinder', password='stackops', auth_host='127.0.0.1',
     utils.set_option(CINDER_CONF, 'iscsi_ip_address', iscsi_ip_address)
     utils.set_option(CINDER_CONF, 'log_dir', '/var/log/cinder')
     utils.set_option(CINDER_CONF, 'notification_driver',
-                     'cinder.openstack.common.notifier.rabbit_notifier')
+                     'cinder.openstack.common.notifier.rpc_notifier')
     utils.set_option(CINDER_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(CINDER_CONF, 'default_notification_level', 'INFO')
-    '''Check storage types, TODO: Add more storages types   '''
+    # Check storage types, TODO: Add more storages types   '''
     utils.set_option(CINDER_CONF, 'scheduler_driver',
                      'cinder.scheduler.filter_scheduler.FilterScheduler')
-
     utils.set_option(CINDER_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
     utils.set_option(CINDER_API_PASTE_CONF, 'admin_user',

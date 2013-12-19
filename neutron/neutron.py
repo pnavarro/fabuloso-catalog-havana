@@ -98,7 +98,9 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     # Configurtin LBAAS service
     utils.set_option(NEUTRON_CONF, 'service_plugins',
                      'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
-                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin')
+                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin, '
+                     'neutron.services.l3_router.'
+                     'l3_router_plugin.L3RouterPlugin')
     cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
@@ -115,6 +117,8 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_CONF, 'auth_port', auth_port,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
+                     section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'auth_url', auth_uri,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'allow_overlapping_ips', 'True')
 
@@ -156,8 +160,8 @@ def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
                      section='securitygroup')
     # agent section
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/local/bin/neutron-rootwrap '
-                     '/etc/neutron/rootwrap.conf', section='agent')
+                     'sudo neutron-rootwrap /etc/neutron/rootwrap.conf',
+                     section='agent')
 
 
 def validate_database(database_type, username, password, host, port,
