@@ -96,12 +96,16 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     # Configurtin LBAAS service
+    # Add L3Router Plugin for ML2 plugin
+    #utils.set_option(NEUTRON_CONF, 'service_plugins',
+    #                 'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
+    #                 'neutron.services.firewall.fwaas_plugin.FirewallPlugin, '
+    #                 'neutron.services.l3_router.'
+    #                 'l3_router_plugin.L3RouterPlugin')
     utils.set_option(NEUTRON_CONF, 'service_plugins',
-                     'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
-                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin, '
-                     'neutron.services.l3_router.'
-                     'l3_router_plugin.L3RouterPlugin')
-    cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+                    'neutron.services.loadbalancer.plugin.LoadBalancerPlugin')
+    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
+    #cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
         mysql_host, mysql_password, mysql_port, mysql_schema, mysql_username),
@@ -121,6 +125,34 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
     utils.set_option(NEUTRON_CONF, 'auth_url', auth_uri,
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'allow_overlapping_ips', 'True')
+
+
+def configure_ovs_plugin_vlan(vlan_start='1', vlan_end='4094',
+                              mysql_username='neutron',
+                              mysql_password='stackops',
+                              mysql_host='127.0.0.1',
+                              mysql_port='3306', mysql_schema='neutron'):
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
+                     utils.sql_connect_string(mysql_host, mysql_password,
+                                              mysql_port, mysql_schema,
+                                              mysql_username),
+                     section='database')
+    utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
+                     section='database')
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_type', 'vlan',
+                     section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+                     % (vlan_start, vlan_end), section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
+                     'sudo /usr/bin/quantum-rootwrap '
+                     '/etc/quantum/rootwrap.conf',
+                     section='agent')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
 
 
 def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',

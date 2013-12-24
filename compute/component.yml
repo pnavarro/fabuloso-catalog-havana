@@ -13,8 +13,12 @@ Services:
           - configure_network
           - set_config_file
           - configure_neutron
-          - configure_ml2_plugin_vlan
+          - configure_ovs_plugin_vlan
           - start
+    - name: configure_ovs_plugin_vlan
+      description: Configure the vlan for OpenVSwitch
+      methods:
+          - configure_ovs_plugin_vlan
     - name: configure_ml2_plugin_vlan
       description: Configure the ml2 plugin vlan
       methods:

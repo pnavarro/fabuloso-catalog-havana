@@ -355,7 +355,8 @@ def configure_neutron(user='neutron', password='stackops',
                       neutron_mysql_password='stackops',
                       neutron_mysql_schema='neutron', mysql_host='127.0.0.1',
                       mysql_port='3306'):
-    cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+    #cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
+    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
     utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
@@ -431,6 +432,40 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
     openvswitch_start()
+    neutron_plugin_openvswitch_agent_start()
+
+def configure_ovs_plugin_vlan(br_postfix='bond-vm', vlan_start='2',
+                              vlan_end='4094', neutron_mysql_username='neutron',
+                              neutron_mysql_password='stackops',
+                              mysql_host='127.0.0.1', mysql_port='3306',
+                              neutron_mysql_schema='neutron'):
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
+                     utils.sql_connect_string(mysql_host,
+                                              neutron_mysql_password,
+                                              mysql_port, neutron_mysql_schema,
+                                              neutron_mysql_username),
+                     section='database')
+    utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
+                     section='database')
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_type', 'vlan',
+                     section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+                     % (vlan_start, vlan_end), section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
+                     'physnet1:br-%s' % br_postfix, section='ovs')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
+                     'sudo neutron-rootwrap /etc/neutron/rootwrap.conf',
+                     section='agent')
+    with settings(warn_only=True):
+        sudo('ovs-vsctl del-br br-int')
+    sudo('ovs-vsctl add-br br-int')
     neutron_plugin_openvswitch_agent_start()
 
 
