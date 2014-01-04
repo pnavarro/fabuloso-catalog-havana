@@ -444,6 +444,7 @@ def configure_ml2_plugin_vlan(br_postfix='bond-vm', vlan_start='2',
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
     sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
     sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ovs] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [ml2_type_vlan] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
@@ -459,7 +460,7 @@ def configure_ml2_plugin_vlan(br_postfix='bond-vm', vlan_start='2',
     utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
                      % (vlan_start, vlan_end), section='ml2_type_vlan')
     utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
-                     'physnet1:br-%s' % br_postfix, section='ml2_type_vlan')
+                     'physnet1:br-%s' % br_postfix, section='ovs')
     # database section
     utils.set_option(OVS_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, neutron_mysql_password,
