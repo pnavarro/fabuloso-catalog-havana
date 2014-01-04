@@ -228,6 +228,7 @@ def configure_ml2_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
     sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
     sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [ml2_type_vlan] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ovs] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
     sudo('echo [agent] >> %s' % OVS_PLUGIN_CONF)
@@ -241,6 +242,8 @@ def configure_ml2_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
     # ml2_type_vlan section
     utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
                      % (vlan_start, vlan_end), section='ml2_type_vlan')
+    utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
+                     'physnet1:br-%s' % br_postfix, section='ovs')
     # database section
     utils.set_option(OVS_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, mysql_password,
