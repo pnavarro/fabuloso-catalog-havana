@@ -8,12 +8,16 @@ Services:
       methods:
           - install
           - set_config_file
-          - configure_ml2_plugin_vlan
+          - configure_ml2_plugin_vxlan
           - start
     - name: start
       description: Start the neutron service
       methods: 
           - start
+    - name: configure_ml2_plugin_vxlan
+      description: Configure the ml2 plugin vxlan
+      methods:
+          - configure_ml2_plugin_vxlan
     - name: configure_ml2_plugin_vlan
       description: Configure the ml2 plugin vlan
       methods:
