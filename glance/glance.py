@@ -79,7 +79,8 @@ def set_config_file(user='glance', password='stackops',
                     mysql_schema='glance',
                     tenant='service', mysql_host='127.0.0.1',
                     mysql_port='3306', auth_port='35357', auth_protocol='http',
-                    auth_host='127.0.0.1'):
+                    auth_host='127.0.0.1', rabbit_host='127.0.0.1',
+                    rabbit_password='guest'):
     utils.set_option(GLANCE_API_CONFIG, 'enable_v1_api', 'True')
     utils.set_option(GLANCE_API_CONFIG, 'enable_v2_api', 'True')
     for f in ['/etc/glance/glance-api.conf',
@@ -110,7 +111,20 @@ def set_config_file(user='glance', password='stackops',
     utils.set_option(GLANCE_API_CONFIG,
                      'flavor', 'keystone',
                      section='paste_deploy')
+    # Doc says that Glance is not using oslo notifier, decomment this when
+    # it recommends to use it
+    #utils.set_option(GLANCE_API_CONFIG, 'rpc_backend', 'nova.openstack.common.'
+    #                                                   'rpc.impl_kombu')
+    #utils.set_option(GLANCE_API_CONFIG, 'notification_driver',
+    #                 'nova.openstack.common.notifier.rpc_notifier')
+    utils.set_option(GLANCE_API_CONFIG, 'rabbit_host', rabbit_host)
+    utils.set_option(GLANCE_API_CONFIG, 'rabbit_password', rabbit_password)
 
+    utils.set_option(GLANCE_API_CONFIG, 'notification_topics',
+                     'notifications,monitor')
+    utils.set_option(GLANCE_API_CONFIG, 'notifier_strategy',
+                     'rabbit')
+    utils.set_option(GLANCE_API_CONFIG, 'default_notification_level', 'INFO')
     utils.set_option(GLANCE_REGISTRY_PASTE_INI, 'pipeline',
                      'authtoken context registryapp',
                      section='pipeline:glance-registry-keystone')
