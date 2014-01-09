@@ -267,7 +267,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
                 chargeback_internal_url, chargeback_internal_url))
     sudo('''echo '%s' > /etc/nginx/sites-available/default-ssl'''
          % nginx_conf)
-    sudo('ln -s /etc/nginx/sites-available/default-ssl /etc/nginx/sites-enabled/default-ssl)
+    sudo('ln -s /etc/nginx/sites-available/default-ssl /etc/nginx/sites-enabled/default-ssl')
 
 
 def configure_iptables(public_ip):
