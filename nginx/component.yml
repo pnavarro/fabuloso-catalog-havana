@@ -1,0 +1,23 @@
+name: nginx
+file: nginx.py
+description: Operations over Nginx HTTP server
+
+Services:
+    - name: install
+      description: Install and Configure Nginx HTTP Server
+      methods:
+          - install
+          - configure
+          - start
+    - name: start 
+      description: Start Nginx HTTP service
+      methods: 
+          - start
+    - name: stop
+      description: Stop Nginx HTTP service
+      methods:
+          - stop
+    - name: uninstall
+      description: Uninstall Nginx HTTP Server
+      methods:
+          - uninstall_ubuntu_packages
