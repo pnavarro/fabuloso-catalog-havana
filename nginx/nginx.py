@@ -162,6 +162,7 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
 	|location /chargeback {
         |proxy_pass %s;
         |}
+        |}
 	|''' % (common_name, ec2_internal_url,
                 compute_internal_url, keystone_internal_url,
                 glance_internal_url, cinder_internal_url,
