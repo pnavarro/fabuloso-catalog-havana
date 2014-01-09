@@ -44,8 +44,8 @@ def uninstall_ubuntu_packages():
 
 def install():
     configure_ubuntu_packages()
-
-
+    
+    
 def configure(ec2_internal_host="127.0.0.1",
               compute_internal_host="127.0.0.1",
               keystone_internal_host="127.0.0.1",
@@ -82,7 +82,6 @@ def configure(ec2_internal_host="127.0.0.1",
                          chargeback_internal_url,
                          None, common_name)
     create_certs(common_name)
-    stop()
     start()
 
 
