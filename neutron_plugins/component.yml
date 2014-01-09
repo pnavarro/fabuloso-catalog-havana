@@ -9,12 +9,16 @@ Services:
           - compile_datapath
           - install
           - set_config_file
-          - configure_ml2_plugin_vlan
+          - configure_ml2_plugin_vxlan
           - configure_l3_agent
           - configure_dhcp_agent
           - configure_metadata_agent
           - configure_lbaas_agent
           - start
+    - name: configure_ml2_plugin_vxlan
+      description: Configure the ml2 plugin vxlan
+      methods:
+          - configure_ml2_plugin_vxlan
     - name: configure_ml2_plugin_vlan
       description: Configure the ml2 plugin vlan
       methods:

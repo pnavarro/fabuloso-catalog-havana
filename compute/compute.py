@@ -434,6 +434,54 @@ def configure_ovs_plugin_gre(mysql_username='neutron',
     neutron_plugin_openvswitch_agent_start()
 
 
+def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
+                               neutron_mysql_password='stackops',
+                               mysql_host='127.0.0.1', mysql_port='3306',
+                               neutron_mysql_schema='neutron',
+                               local_ip='127.0.0.1'):
+    # TODO Fix that when ml2-neutron-plugin will be added in icehouse
+    sudo('mkdir -p /etc/neutron/plugins/ml2')
+    sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ovs] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2_type_vxlan] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [agent] >> %s' % OVS_PLUGIN_CONF)
+    # ML2 section
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vxlan',
+                     section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'type_drivers',
+                     'local,flat,vlan,gre,vxlan', section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'mechanism_drivers',
+                     'openvswitch,linuxbridge', section='ml2')
+    # ml2_type_vxlan section
+    utils.set_option(OVS_PLUGIN_CONF, 'vni_ranges', '1:1000',
+                     section='ml2_type_vxlan')
+    # ovs section
+    utils.set_option(OVS_PLUGIN_CONF, 'local_ip', local_ip, section='ovs')
+    # database section
+    utils.set_option(OVS_PLUGIN_CONF, 'connection',
+                     utils.sql_connect_string(mysql_host, neutron_mysql_password,
+                                              mysql_port, neutron_mysql_schema,
+                                              neutron_mysql_username),
+                     section='database')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
+                     'sudo neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='agent')
+    with settings(warn_only=True):
+        sudo('ovs-vsctl del-br br-int')
+    sudo('ovs-vsctl add-br br-int')
+    neutron_plugin_openvswitch_agent_start()
+
+
 def configure_ml2_plugin_vlan(br_postfix='bond-vm', vlan_start='2',
                               vlan_end='4094', neutron_mysql_username='neutron',
                               neutron_mysql_password='stackops',
