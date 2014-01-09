@@ -33,6 +33,7 @@ def configure_ubuntu_packages():
     """Configure nginx packages"""
     package_ensure('python-software-properties')
     sudo('add-apt-repository  -y ppa:nginx/stable') 
+    sudo('apt-get update')
     package_ensure('nginx')
 
 
@@ -67,7 +68,7 @@ def configure(ec2_internal_host="127.0.0.1",
                           ":8080/activity"
     chargeback_internal_url="http://" + chargeback_internal_host + \
                             ":8080/chargeback"
-    configure_ubuntu_packages()
+     #configure_ubuntu_packages()
     sudo('mkdir -p /var/log/nova')
     configure_nginx(ec2_internal_url, compute_internal_url,
                      keystone_internal_url, glance_internal_url,
@@ -104,7 +105,8 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
         |server_name %s;
     	|access_log /var/log/nginx/stackops_access_log;
         |error_log /var/log/nginx/stackops_error_log;
-        | root /var/lib/tomcat7/webapps/;
+        |root /var/lib/tomcat7/webapps/;
+        |rewrite  ^ https://$server_name$request_uri? permanent;
         |
 	|
         |location / {
@@ -151,7 +153,7 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
     	|}
 	|
 	| location /activity/ {
-        |proxy_pass http://127.0.0.1:8080/activity;
+        |proxy_pass %s;
         |}
 	|
 	|location /accounting {
@@ -161,17 +163,12 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
 	|location /chargeback {
         |proxy_pass %s;
         |}
-	|}
-        |''' % (common_name, ec2_internal_url, ec2_internal_url,
-                compute_internal_url, compute_internal_url,
-                keystone_internal_url, keystone_internal_url,
-                glance_internal_url, glance_internal_url,
-                cinder_internal_url, cinder_internal_url,
-                neutron_internal_url, neutron_internal_url,
-                portal_internal_url, portal_internal_url,
+	|''' % (common_name, ec2_internal_url,
+                compute_internal_url, keystone_internal_url,
+                glance_internal_url, cinder_internal_url,
+                neutron_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
-                activity_internal_url, activity_internal_url,
-                chargeback_internal_url, chargeback_internal_url))
+                chargeback_internal_url))
     sudo('''echo '%s' > /etc/nginx/sites-available/default''' % nginx_conf)
 
 
@@ -187,7 +184,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
                                                "/activity",
                          chargeback_internal_url="http://127.0.0.1:8080"
                                                  "/chargeback",
-                         apache_conf=None, common_name='127.0.0.1'):
+                         nginx_conf=None, common_name='127.0.0.1'):
     if nginx_conf is None:
         nginx_conf = text_strip_margin('''
         |
@@ -244,7 +241,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
     	|}
 	|
 	| location /activity/ {
-        |proxy_pass http://127.0.0.1:8080/activity;
+        |proxy_pass %s;
         |}
 	|
 	|location /accounting {
@@ -255,16 +252,12 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
         |proxy_pass %s;
         |}
 	|}
-        |''' % (common_name, ec2_internal_url, ec2_internal_url,
-                compute_internal_url, compute_internal_url,
-                keystone_internal_url, keystone_internal_url,
-                glance_internal_url, glance_internal_url,
-                cinder_internal_url, cinder_internal_url,
-                neutron_internal_url, neutron_internal_url,
-                portal_internal_url, portal_internal_url,
+        |''' % (common_name, ec2_internal_url,
+                compute_internal_url, keystone_internal_url,
+                glance_internal_url, cinder_internal_url, 
+                neutron_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
-                activity_internal_url, activity_internal_url,
-                chargeback_internal_url, chargeback_internal_url))
+                chargeback_internal_url))
     sudo('''echo '%s' > /etc/nginx/sites-available/default-ssl'''
          % nginx_conf)
     sudo('ln -s /etc/nginx/sites-available/default-ssl /etc/nginx/sites-enabled/default-ssl')
