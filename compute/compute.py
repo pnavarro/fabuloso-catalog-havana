@@ -478,6 +478,8 @@ def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='agent')
+    utils.set_option(OVS_PLUGIN_CONF, 'tunnel_types', 'vxlan',
+                     section='agent')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')

@@ -165,6 +165,8 @@ def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
                      'sudo neutron-rootwrap '
                      '/etc/neutron/rootwrap.conf', section='agent')
+    utils.set_option(OVS_PLUGIN_CONF, 'tunnel_types', 'vxlan',
+                     section='agent')
 
 
 def configure_ml2_plugin_vlan(vlan_start='1', vlan_end='4094',
