@@ -126,8 +126,7 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
 def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
                                neutron_mysql_password='stackops',
                                mysql_host='127.0.0.1', mysql_port='3306',
-                               neutron_mysql_schema='neutron',
-                               local_ip='127.0.0.1'):
+                               neutron_mysql_schema='neutron'):
     # TODO Fix that when ml2-neutron-plugin will be added in icehouse
     sudo('mkdir -p /etc/neutron/plugins/ml2')
     sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
@@ -149,7 +148,6 @@ def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
     utils.set_option(OVS_PLUGIN_CONF, 'vni_ranges', '1:1000',
                      section='ml2_type_vxlan')
     # ovs section
-    utils.set_option(OVS_PLUGIN_CONF, 'local_ip', local_ip, section='ovs')
     utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
                      section='ovs')
     # database section
