@@ -150,6 +150,8 @@ def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
                      section='ml2_type_vxlan')
     # ovs section
     utils.set_option(OVS_PLUGIN_CONF, 'local_ip', local_ip, section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
+                     section='ovs')
     # database section
     utils.set_option(OVS_PLUGIN_CONF, 'connection',
                      utils.sql_connect_string(mysql_host, neutron_mysql_password,
