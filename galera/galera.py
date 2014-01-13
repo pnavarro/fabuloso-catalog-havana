@@ -40,9 +40,9 @@ def configure_first(root_pass='stackops'):
     utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_sst_method', 'rsync', section='mysqld')
 
     #sudo("sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf")
-    sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
-         'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
-         % (root_pass, root_pass))
+    #sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
+    #     'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
+    #     % (root_pass, root_pass))
 
 def configure(root_pass='stackops', galera_master_ip=None):
     """Generate mysql configuration. Execute on both servers"""
@@ -52,15 +52,15 @@ def configure(root_pass='stackops', galera_master_ip=None):
     #sudo('echo "manual" >> /etc/init/mysql.override')
 
     sudo("echo '[mysql]' >> /etc/mysql/conf.d/mariadb.cnf")
-    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_cluster_address', "\'gcomm://%s\'", section='mysqld') %galera_master_ip
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_cluster_address', "\'gcomm://%s\'" % galera_master_ip , section='mysqld')
     utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_provider', '/usr/lib/galera/libgalera_smm.so', section='mysqld')
     utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_retry_autocommit', '0', section='mysqld')
     utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_sst_method', 'rsync', section='mysqld')
 
     #sudo("sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf")
-    sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
-         'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
-         % (root_pass, root_pass))
+    #sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
+     #    'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
+     #    % (root_pass, root_pass))
 
 
 
@@ -71,6 +71,10 @@ def start():
 
 def __configure_ubuntu_packages(root_pass='stackops'):
     """Configure mysql ubuntu packages"""
+    sudo('echo "deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main" > /etc/apt/sources.list.d/mariadb.list')
+    sudo('echo "deb-src http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main" >> /etc/apt/sources.list.d/mariadb.list')
+    sudo('apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db') 
+    sudo('apt-get update')	
     sudo('echo mariadb-galera-server-5.5 mysql-server/root_password password %s'
          ' | debconf-set-selections' % root_pass)
     sudo('echo mariadb-galera-server-5.5 mysql-server/root_password_again password %s'
