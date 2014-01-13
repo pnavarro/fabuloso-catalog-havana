@@ -198,7 +198,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
         |root /var/lib/tomcat7/webapps/;
 	|
         |location / {
-        |        deny all;
+        | rewrite / /portal;
         |}
 	|
 	|location /services/ {
@@ -225,7 +225,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
 	|proxy_pass %s;
 	|}
 	|
-	|location /portal/ {
+	|location /portal {
         |index index.jsp;
         |proxy_set_header X-Forwarded-Host $host;
         |proxy_set_header X-Forwarded-Server $host;
