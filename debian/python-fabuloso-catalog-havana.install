@@ -17,3 +17,4 @@ storage etc/fabuloso/repos/havana/
 swift etc/fabuloso/repos/havana/
 swift_proxy etc/fabuloso/repos/havana/
 swift_storage etc/fabuloso/repos/havana/
+nginx etc/fabuloso/repos/havana/
