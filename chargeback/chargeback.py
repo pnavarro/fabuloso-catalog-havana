@@ -22,9 +22,7 @@ def configure_ubuntu_packages():
 
 def uninstall_ubuntu_packages():
     """Uninstall accounting and chargeback packages"""
-    package_clean('stackops-chargeback-portal-plugin')
     package_clean('stackops-chargeback')
-    package_clean('stackops-activity-portal-plugin')
     package_clean('stackops-activity')
 
 
@@ -87,7 +85,6 @@ def configure_activity(mysql_activity_username='activity',
     PROPERTY_KEE='license.manager.token';"''' %
          (mysql_activity_host, mysql_activity_username,
           mysql_activity_password, mysql_activity_schema, license_token))
-    package_ensure('stackops-activity-portal-plugin')
 
 
 def configure_chargeback(mysql_chargeback_username='chargeback',
@@ -135,4 +132,3 @@ def configure_chargeback(mysql_chargeback_username='chargeback',
     sudo('echo stackops-chargeback stackops-chargeback/keystone-admin-token '
          'string %s | debconf-set-selections' % admin_token)
     package_ensure('stackops-chargeback')
-    package_ensure('stackops-chargeback-portal-plugin')
