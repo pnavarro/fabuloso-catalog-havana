@@ -1,0 +1,8 @@
+name: keepalived
+file: keepalived.py
+description: Keepalived Installation
+Services:
+    - name: install
+      description:  Install Keepalived from ubuntu packages
+      methods:
+          - install
