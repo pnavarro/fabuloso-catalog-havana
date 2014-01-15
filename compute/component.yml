@@ -10,7 +10,6 @@ Services:
           - configure_ntp
           - configure_vhost_net
           - configure_libvirt
-          - configure_network
           - set_config_file
           - configure_neutron
           - configure_ml2_plugin_vxlan
