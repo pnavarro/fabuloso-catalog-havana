@@ -142,7 +142,8 @@ def get_agent_id (user='neutron', password='stackops', auth_host='127.0.0.1',
     auth_uri = 'http://' + auth_host + ':5000'
     stdout = sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
                   "--os-tenant-name %s --insecure --endpoint-type internalURL "
-                  "agent-list | grep `hostname` | awk '/ | / { print $2 }'"
+                  "agent-list | grep `hostname` |  grep 'DHCP agent' | awk '/ | "
+                  "/ { print $2 }'"
                   % (auth_uri, user, password, tenant))
     puts(stdout)
     return stdout.replace('\n', '')
