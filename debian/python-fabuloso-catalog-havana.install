@@ -18,3 +18,6 @@ swift etc/fabuloso/repos/havana/
 swift_proxy etc/fabuloso/repos/havana/
 swift_storage etc/fabuloso/repos/havana/
 nginx etc/fabuloso/repos/havana/
+galera etc/fabuloso/repos/havana/
+dhcp_agent etc/fabuloso/repos/havana/
+keepalived etc/fabuloso/repos/havana/
