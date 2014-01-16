@@ -40,7 +40,7 @@ def install():
 
 def configure():
     sudo('echo "net.ipv4.ip_nonlocal_bind=1" >> /etc/sysctl.conf')
-    sudo('sysctlp -p')
+    sudo('sysctl -p')
     
     keepalived_conf = text_strip_margin('''
 	    |# Configuration File for keepalived
