@@ -9,6 +9,10 @@ Services:
           - install
           - configure
           - start
+    - name: install_without_config
+      description: Install Nginx HTTP Server
+      methods:
+          - install
     - name: start 
       description: Start Nginx HTTP service
       methods: 
