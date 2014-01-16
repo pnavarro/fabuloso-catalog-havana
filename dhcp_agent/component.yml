@@ -15,7 +15,7 @@ Services:
       description: enables the dhcp agent
       methods:
           - enable_dhcp_agent
-    - name: enable_dhcp_agent
+    - name: disable_dhcp_agent
       description: disables the dhcp agent
       methods:
           - disable_dhcp_agent
