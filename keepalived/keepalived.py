@@ -14,9 +14,9 @@
 #   limitations under the License.from fabric.api import *
 import MySQLdb
 
-from fabric.api import settings, sudo, put, local, puts
-from cuisine import package_ensure, package_clean
-from fabuloso import fabuloso
+from fabric.api import *
+from cuisine import *
+
 
 
 def stop():
