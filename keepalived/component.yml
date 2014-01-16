@@ -6,6 +6,6 @@ Services:
       description:  Install Keepalived from ubuntu packages
       methods:
           - install
- 	  - stop
+ 	      - stop
           - configure
           
