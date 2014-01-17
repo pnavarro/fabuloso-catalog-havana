@@ -224,3 +224,29 @@ def validate_database(database_type, username, password, host, port,
 def validate_credentials(user, password, tenant, endpoint, admin_token):
     fab = fabuloso.Fabuloso()
     fab.validate_credentials(user, password, tenant, endpoint, admin_token)
+
+
+def configure_swift_store(auth_uri='https://'
+                                   'identity.api.rackspacecloud.com/v2.0',
+                          swift_store_user='user',
+                          swift_store_password='password',
+                          swift_store_container='glance'):
+    utils.set_option(GLANCE_API_CONFIG, 'default_store', 'swift')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_auth_version', '2')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_auth_address',
+                     auth_uri)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_user',
+                     swift_store_user)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_key',
+                     swift_store_password)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_container',
+                     swift_store_container)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_create_container_on_put',
+                     'True')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_large_object_size',
+                     '5120')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_large_object_chunk_size',
+                     '1024')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_enable_snet',
+                     'False')
+    start()

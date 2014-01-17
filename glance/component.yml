@@ -25,3 +25,7 @@ Services:
       methods:
           - validate_database
           - validate_credentials
+    - name: configure_swift_store
+      description: Configures glance store to use Swift
+      methods:
+          - configure_swift_store
