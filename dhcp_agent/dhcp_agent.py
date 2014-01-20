@@ -139,7 +139,7 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
 
 def get_agent_id (user='neutron', password='stackops', auth_host='127.0.0.1',
                   tenant='service'):
-    auth_uri = 'http://' + auth_host + ':5000'
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
     stdout = sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
                   "--os-tenant-name %s --insecure --endpoint-type internalURL "
                   "agent-list | grep `hostname` |  grep 'DHCP agent' | awk '/ | "
@@ -151,7 +151,7 @@ def get_agent_id (user='neutron', password='stackops', auth_host='127.0.0.1',
 
 def enable_dhcp_agent(user='neutron', password='stackops',
                       auth_host='127.0.0.1', tenant='service'):
-    auth_uri = 'http://' + auth_host + ':5000'
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
     agent_id = get_agent_id(user, password, auth_host, tenant)
     sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
          "--os-tenant-name %s --insecure --endpoint-type internalURL "
@@ -160,7 +160,7 @@ def enable_dhcp_agent(user='neutron', password='stackops',
 
 def disable_dhcp_agent(user='neutron', password='stackops',
                       auth_host='127.0.0.1', tenant='service'):
-    auth_uri = 'http://' + auth_host + ':5000'
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
     agent_id = get_agent_id(user, password, auth_host, tenant)
     sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
          "--os-tenant-name %s --insecure --endpoint-type internalURL "
