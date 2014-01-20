@@ -155,7 +155,7 @@ def enable_dhcp_agent(user='neutron', password='stackops',
     agent_id = get_agent_id(user, password, auth_host, tenant)
     sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
          "--os-tenant-name %s --insecure --endpoint-type internalURL "
-         "agent-update --admin-state-up True %s'"
+         "agent-update %s --admin-state-up True"
          % (auth_uri, user, password, tenant, agent_id))
 
 def disable_dhcp_agent(user='neutron', password='stackops',
@@ -164,6 +164,6 @@ def disable_dhcp_agent(user='neutron', password='stackops',
     agent_id = get_agent_id(user, password, auth_host, tenant)
     sudo("neutron --os-auth-url %s --os-username %s --os-password %s "
          "--os-tenant-name %s --insecure --endpoint-type internalURL "
-         "agent-update --admin-state-up False %s'"
+         "agent-update %s --admin-state-up False"
          % (auth_uri, user, password, tenant, agent_id))
 
