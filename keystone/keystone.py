@@ -249,7 +249,7 @@ def define_nova_service(admin_token='password', region='RegionOne',
                         nova_password='stackops'):
     nova_public_url = 'http://' + nova_public_host + \
                       '/compute/v1.1/$(tenant_id)s'
-    nova_internal_url = ' http://' + nova_internal_host + \
+    nova_internal_url = 'http://' + nova_internal_host + \
                         ':8774/v1.1/$(tenant_id)s'
     nova_admin_url = 'http://' + nova_internal_host + \
                      ':8774/v1.1/$(tenant_id)s'
