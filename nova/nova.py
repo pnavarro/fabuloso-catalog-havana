@@ -178,8 +178,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
                     auth_port='35357', auth_protocol='http',
                     mysql_username='nova', mysql_password='stackops',
                     mysql_schema='nova', tenant='service',
-                    mysql_host='127.0.0.1',
-                    mysql_port='3306'):
+                    mysql_host='127.0.0.1', mysql_port='3306',
+                    rabbit_host='127.0.0.1', rabbit_password='guest'):
 
     f = '/etc/nova/api-paste.ini'
     sudo('sed -i "/volume/d" %s' % f)
@@ -254,6 +254,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('lock_path', '/var/lock/nova')
     set_property('root_helper', 'sudo nova-rootwrap /etc/nova/rootwrap.conf')
     set_property('verbose', 'true')
+    set_property('rabbit_host', rabbit_host)
+    set_property('rabbit_password', rabbit_password)
     set_property('rpc_backend', 'nova.rpc.impl_kombu')
     set_property('notification_driver',
                  'nova.openstack.common.notifier.rabbit_notifier')
