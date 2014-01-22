@@ -146,6 +146,9 @@ def set_config_file(user='glance', password='stackops',
     sudo("sed -i 's/^#flavor=.*$/flavor=keystone/g' "
          "/etc/glance/glance-registry.conf")
     start()
+
+
+def db_installation():
     sudo("glance-manage version_control 0")
     sudo("glance-manage db_sync")
 

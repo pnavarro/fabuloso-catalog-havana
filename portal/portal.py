@@ -52,8 +52,11 @@ def configure(mysql_username='portal',
               mysql_port='3306',
               mysql_schema='portal',
               automation_license_token='vs0QiaN9TA6lIIe3uPSfiG3fs',
-              activity_license_token='SUhIsoHOLNFjt6Drz7W26NrNs'):
+              activity_license_token='SUhIsoHOLNFjt6Drz7W26NrNs',
+              install_db='True'):
     """Generate portal configuration. Execute on both servers"""
+    sudo('echo stackops-portal stackops-portal/mysql-install boolean %s '
+         '| debconf-set-selections' % install_db)
     sudo('echo stackops-portal stackops-portal/mysql-usr string %s | '
          'debconf-set-selections' % mysql_username)
     sudo('echo stackops-portal stackops-portal/mysql-password password %s '
@@ -100,3 +103,21 @@ def configure_automation_license(license_token=None, mysql_host="127.0.0.1",
 def configure_activity_license(license_token=None, mysql_host="127.0.0.1",
                                root_pass="stackops"):
     _configure_token_license('activity', license_token, mysql_host, root_pass)
+
+
+def configure_portal_without_db(mysql_username='portal',
+                                mysql_password='stackops',
+                                admin_token='password',
+                                mysql_admin_password='stackops',
+                                keystone_url='http://localhost:5000/v2.0',
+                                keystone_admin_url='http://localhost:35357/v2.0',
+                                mysql_host='127.0.0.1',
+                                mysql_port='3306',
+                                mysql_schema='portal',
+                                automation_license_token='vs0QiaN9TA6lIIe3uPSfiG3fs',
+                                activity_license_token='SUhIsoHOLNFjt6Drz7W26NrNs'):
+    configure(mysql_username, mysql_password, admin_token,
+              mysql_admin_password, keystone_url, keystone_admin_url,
+              mysql_host, mysql_port, mysql_schema, automation_license_token,
+              activity_license_token, 'False')
+

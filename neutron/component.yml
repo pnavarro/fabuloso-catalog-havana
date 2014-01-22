@@ -10,6 +10,13 @@ Services:
           - set_config_file
           - configure_ml2_plugin_vxlan
           - start
+    - name: install_no_db
+      description: Install neutron server and configure it
+      methods:
+          - install
+          - set_config_file
+          - configure_ml2_plugin_vxlan
+          - start
     - name: start
       description: Start the neutron service
       methods: 

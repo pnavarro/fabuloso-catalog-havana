@@ -10,6 +10,13 @@ Services:
           - configure_activity
           - configure_chargeback
           - start
+    - name: install_no_db
+      description: Install and Configure StackOps Chargeback
+      methods:
+          - configure_ubuntu_packages
+          - configure_activity_without_db
+          - configure_chargeback_without_db
+          - start
     - name: uninstall
       description: Uninstall StackOps Chargeback
       methods:

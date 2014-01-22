@@ -8,6 +8,12 @@ Services:
       methods:
           - install
           - set_config_file
+          - db_installation
+    - name: install_no_db
+      description:  Install OpenStack Glance from ubuntu packages
+      methods:
+          - install
+          - set_config_file
     - name: prepare_image
       description: Downloads an image from amazon and publishes it into glance
       methods:

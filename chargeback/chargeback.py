@@ -43,8 +43,11 @@ def configure_activity(mysql_activity_username='activity',
                        auth_port='35357',
                        auth_protocol='http',
                        auth_uri='/v2.0',
-                       license_token="SUhIsoHOLNFjt6Drz7W26NrNs"):
+                       license_token="SUhIsoHOLNFjt6Drz7W26NrNs",
+                       install_db='True'):
     """Generate activity configuration. Execute on both servers"""
+    sudo('echo stackops-activity stackops-activity/mysql-install boolean %s '
+         '| debconf-set-selections' % install_db)
     sudo('echo stackops-activity stackops-activity/mysql-usr string '
          '%s | debconf-set-selections' % mysql_activity_username)
     sudo('echo stackops-activity stackops-activity/mysql-password password %s '
@@ -100,8 +103,10 @@ def configure_chargeback(mysql_chargeback_username='chargeback',
                          auth_host='127.0.0.1',
                          auth_port='35357',
                          auth_protocol='http',
-                         auth_uri='/v2.0'):
+                         auth_uri='/v2.0', install_db='True'):
     """Generate chargeback configuration. Execute on both servers"""
+    sudo('echo stackops-chargeback stackops-chargeback/mysql-install boolean %s '
+         '| debconf-set-selections' % install_db)
     sudo('echo stackops-chargeback stackops-chargeback/mysql-usr string '
          '%s | debconf-set-selections' % mysql_chargeback_username)
     sudo('echo stackops-chargeback stackops-chargeback/mysql-password '
@@ -132,3 +137,53 @@ def configure_chargeback(mysql_chargeback_username='chargeback',
     sudo('echo stackops-chargeback stackops-chargeback/keystone-admin-token '
          'string %s | debconf-set-selections' % admin_token)
     package_ensure('stackops-chargeback')
+
+
+def configure_chargeback_without_db(mysql_chargeback_username='chargeback',
+                         mysql_chargeback_password='stackops',
+                         mysql_chargeback_host='localhost',
+                         mysql_chargeback_port='3306',
+                         mysql_chargeback_schema='chargeback',
+                         mysql_activity_schema='activity',
+                         mysql_chargeback_root_password='stackops',
+                         service_chargeback_user='chargeback',
+                         service_chargeback_password='stackops',
+                         admin_token='password',
+                         auth_host='127.0.0.1',
+                         auth_port='35357',
+                         auth_protocol='http',
+                         auth_uri='/v2.0'):
+    configure_chargeback(mysql_chargeback_username, mysql_chargeback_password,
+                         mysql_chargeback_host, mysql_chargeback_port,
+                         mysql_chargeback_schema, mysql_activity_schema,
+                         mysql_chargeback_root_password,
+                         service_chargeback_user, service_chargeback_password,
+                         admin_token, auth_host, auth_port, auth_protocol,
+                         auth_uri, 'False')
+
+
+def configure_activity_without_db(mysql_activity_username='activity',
+                       mysql_activity_password='stackops',
+                       mysql_activity_host='localhost',
+                       mysql_activity_port='3306',
+                       mysql_activity_schema='activity',
+                       mysql_activity_root_password='stackops',
+                       service_activity_user='activity',
+                       service_activity_pass='stackops',
+                       rabbit_username='guest',
+                       rabbit_password='guest',
+                       rabbit_host='localhost',
+                       rabbit_port='5672',
+                       admin_token='password',
+                       auth_host='127.0.0.1',
+                       auth_port='35357',
+                       auth_protocol='http',
+                       auth_uri='/v2.0',
+                       license_token="SUhIsoHOLNFjt6Drz7W26NrNs"):
+    configure_activity(mysql_activity_username, mysql_activity_password,
+                       mysql_activity_host, mysql_activity_port,
+                       mysql_activity_schema, mysql_activity_root_password,
+                       service_activity_user, service_activity_pass,
+                       rabbit_username, rabbit_password, rabbit_host,
+                       rabbit_port, admin_token, auth_host, auth_port,
+                       auth_protocol, auth_uri, license_token, 'False')

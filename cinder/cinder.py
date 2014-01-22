@@ -119,6 +119,9 @@ def set_config_file(user='cinder', password='stackops', auth_host='127.0.0.1',
     auth_uri = 'http://' + auth_host + ':5000/v2.0'
     utils.set_option(CINDER_API_PASTE_CONF, 'auth_uri',
                      auth_uri, section='filter:authtoken')
+
+
+def db_installation():
     sudo('cinder-manage db sync')
 
 

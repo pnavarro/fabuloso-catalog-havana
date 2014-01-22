@@ -8,6 +8,11 @@ Services:
       methods:
           - configure
           - start
+    - name: install_no_db
+      description: Install and Configure StackOps portal
+      methods:
+          - configure_without_db
+          - start
     - name: start 
       description: Start portal service
       methods: 

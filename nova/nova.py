@@ -278,6 +278,9 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('quota_security_groups', '10')
     # NOVA-SCHEDULER configruration
     set_property('cpu_allocation_ratio', '8.0')
+
+
+def db_installation():
     sudo('nova-manage db sync')
 
 
