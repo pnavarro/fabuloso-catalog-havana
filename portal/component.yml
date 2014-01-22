@@ -7,6 +7,8 @@ Services:
       description: Install and Configure StackOps portal
       methods:
           - configure
+          - configure_automation_license
+          - configure_activity_license
           - start
     - name: install_no_db
       description: Install and Configure StackOps portal
