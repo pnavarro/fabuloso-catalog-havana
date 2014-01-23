@@ -16,6 +16,7 @@ Services:
           - install
           - set_config_file
           - start
+          - consoleauth_stop
     - name: nova_properties
       description: Set properties of the Nova service
       methods:
