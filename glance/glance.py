@@ -108,7 +108,7 @@ def set_config_file(user='glance', password='stackops',
     utils.set_option(GLANCE_API_CONFIG,
                      'flavor', 'keystone',
                      section='paste_deploy')
-    utils.set_option(GLANCE_API_CONFIG,
+    utils.set_option(GLANCE_REGISTRY_CONFIG,
                      'flavor', 'keystone',
                      section='paste_deploy')
     # Doc says that Glance is not using oslo notifier, decomment this when
