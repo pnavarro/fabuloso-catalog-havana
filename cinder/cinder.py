@@ -54,6 +54,7 @@ def uninstall():
     package_clean('tgt')
     package_clean('python-cinderclient')
     package_clean('python-mysqldb')
+    package_clean('qemu-utils')
 
 
 def install():
@@ -65,6 +66,7 @@ def install():
     package_ensure('tgt')
     package_ensure('python-cinderclient')
     package_ensure('python-mysqldb')
+    package_ensure('qemu-utils')
     sudo("echo 'include /var/lib/cinder/volumes/*' > "
          "/etc/tgt/conf.d/cinder.conf")
     sudo("echo 'include /etc/tgt/conf.d/cinder.conf' > /etc/tgt/targets.conf")
