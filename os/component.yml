@@ -25,3 +25,19 @@ Services:
       description: make partition
       methods:
           - parted
+    - name: configure_network
+      description: Configure the network of the node
+      methods:
+          - configure_network
+    - name: configure_10gnetwork
+      description: Configure the Kernel for 10G networks
+      methods:
+          - config_10gnetwork
+    - name: configure_memorybuffers
+      description: Configure the Kernel to size the memory buffers
+      methods:
+          - config_memorybuffers
+    - name: configure_ntp
+      description: Configure the ntp server to point to automation
+      methods:
+          - configure_ntp
