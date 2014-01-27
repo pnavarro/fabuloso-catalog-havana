@@ -25,7 +25,7 @@ Services:
           - install
           - set_config_file
     - name: register_region
-      descripion: Register new services in the new region
+      description: Register new services in the new region
       methods:
           - define_keystone_service
           - define_nova_service
