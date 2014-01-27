@@ -24,6 +24,19 @@ Services:
       methods:
           - install
           - set_config_file
+    - name: register_region
+      descripion: Register new services in the new region
+      methods:
+          - define_keystone_service
+          - define_nova_service
+          - define_ec2_service
+          - define_glance_service
+          - define_neutron_service
+          - define_cinder_service
+          - define_portal_service
+          - define_accounting_service
+          - define_chargeback_service
+          - define_swift_service
     - name: register_portal
       description: Register the portal service and the endpoint
       methods:
