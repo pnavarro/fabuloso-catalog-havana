@@ -123,3 +123,11 @@ def configure_portal_without_db(mysql_username='portal',
               mysql_host, mysql_port, mysql_schema, automation_license_token,
               activity_license_token, 'False')
 
+
+def configure_region(region, mysql_host, root_pass):
+        sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "UPDATE
+        PORTAL_SETTINGS SET PROPERTY_VALUE='%(region)s'
+        WHERE PROPERTY_KEE='local.default.region';"
+        portal""" % {'mysql_host': mysql_host, 'root_pass': root_pass,
+                     'region': region})
+

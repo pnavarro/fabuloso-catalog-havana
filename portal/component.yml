@@ -9,6 +9,7 @@ Services:
           - configure
           - configure_automation_license
           - configure_activity_license
+          - configure_region
           - start
     - name: install_no_db
       description: Install and Configure StackOps portal
