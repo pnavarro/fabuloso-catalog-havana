@@ -55,6 +55,7 @@ def configure(ec2_internal_host="127.0.0.1",
               portal_internal_host="127.0.0.1",
               activity_internal_host="127.0.0.1",
               chargeback_internal_host="127.0.0.1",
+              dnsaas_internal_host="127.0.0.1",
               common_name='127.0.0.1'):
     """Generate apache configuration. Execute on both servers"""
     ec2_internal_url="http://" + ec2_internal_host + ":8773/services/Cloud"
@@ -68,18 +69,20 @@ def configure(ec2_internal_host="127.0.0.1",
                           ":8080/activity"
     chargeback_internal_url="http://" + chargeback_internal_host + \
                             ":8080/chargeback"
+    dnsaas_internal_url="http://" + dnsaas_internal_host + ":9001/v1"
      #configure_ubuntu_packages()
     sudo('mkdir -p /var/log/nova')
     configure_nginx(ec2_internal_url, compute_internal_url,
                      keystone_internal_url, glance_internal_url,
                      cinder_internal_url, neutron_internal_url,
                      portal_internal_url, activity_internal_url,
-                     chargeback_internal_url, None, common_name)
+                     chargeback_internal_url, dnsaas_internal_url,
+                     None, common_name)
     configure_nginx_ssl(ec2_internal_url, compute_internal_url,
                          keystone_internal_url, glance_internal_url,
                          cinder_internal_url, neutron_internal_url,
                          portal_internal_url, activity_internal_url,
-                         chargeback_internal_url,
+                         chargeback_internal_url,dnsaas_internal_url,
                          None, common_name)
     create_certs(common_name)
     start()
@@ -95,6 +98,7 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
                      activity_internal_url="http://127.0.0.1:8080/activity",
                      chargeback_internal_url="http://127.0.0.1:8080/"
                                              "chargeback",
+                     dnsaas_internal_url="http://127.0.0.1:9001/v1",
                      nginx_conf=None, common_name='127.0.0.1'):
     if nginx_conf is None:
         nginx_conf = text_strip_margin('''
@@ -162,13 +166,16 @@ def configure_nginx(ec2_internal_url="http://127.0.0.1:8773/services/Cloud",
 	|location /chargeback {
         |proxy_pass %s;
         |}
+	|location /dnsaas {
+        |proxy_pass %s;
+        |}
         |}
 	|''' % (common_name, ec2_internal_url,
                 compute_internal_url, keystone_internal_url,
                 glance_internal_url, cinder_internal_url,
                 neutron_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
-                chargeback_internal_url))
+                chargeback_internal_url, dnsaas_internal_url))
     sudo('''echo '%s' > /etc/nginx/sites-available/default''' % nginx_conf)
 
 
@@ -184,6 +191,7 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
                                                "/activity",
                          chargeback_internal_url="http://127.0.0.1:8080"
                                                  "/chargeback",
+                         dnsaas_internal_url="http://127.0.0.1:9001/v1",
                          nginx_conf=None, common_name='127.0.0.1'):
     if nginx_conf is None:
         nginx_conf = text_strip_margin('''
@@ -251,13 +259,16 @@ def configure_nginx_ssl(ec2_internal_url="http://127.0.0.1:8773/services"
 	|location /chargeback {
         |proxy_pass %s;
         |}
+	|location /dnsaas {
+        |proxy_pass %s;
+        |}
 	|}
         |''' % (common_name, ec2_internal_url,
                 compute_internal_url, keystone_internal_url,
                 glance_internal_url, cinder_internal_url, 
                 neutron_internal_url, portal_internal_url,
                 activity_internal_url, activity_internal_url,
-                chargeback_internal_url))
+                chargeback_internal_url, dnsaas_internal_url))
     sudo('''echo '%s' > /etc/nginx/sites-available/default-ssl'''
          % nginx_conf)
     sudo('ln -s /etc/nginx/sites-available/default-ssl /etc/nginx/sites-enabled/default-ssl')
