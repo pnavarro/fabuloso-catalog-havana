@@ -20,17 +20,6 @@ import fabuloso.utils as utils
 DESIGNATE_CONF = '/etc/designate/designate.conf'
 POWERDNS_CONF = '/etc/powerdns/pdns.d/pdns.local.gmysql'
 
-REPOS = (
-    # Setting first to highest priority
-    'deb http://repos.stackops.net/ havana-dev main',
-    #'deb http://repos.stackops.net/ havana main',
-    #'deb http://repos.stackops.net/ havana-updates main',
-    #'deb http://repos.stackops.net/ havana-security main',
-    #'deb http://repos.stackops.net/ havana-backports main',
-    'deb http://us.archive.ubuntu.com/ubuntu/ precise main universe',
-    'deb http://us.archive.ubuntu.com/ubuntu/ precise-security main universe',
-    'deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main universe',
-    'deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/havana main')
 
 def install_packages():
     sudo('pdns-backend-mysql pdns-backend-mysql/dbconfig-install boolean false '
@@ -47,23 +36,28 @@ def install():
     add_repos()
     install_packages()
 
+
 def start():
     stop()
     pdns_start()
     designate_api_start()
     designate_central_start()
 
+
 def stop():
     pdns_stop()
     designate_api_stop()
     designate_central_stop()
 
+
 def pdns_start():
     pdns_stop()
     sudo("service pdns start")
 
+
 def pdns_stop():
     sudo("service pdns stop")
+
 
 def designate_api_start():
     designate_api_stop()
@@ -71,12 +65,15 @@ def designate_api_start():
 def designate_api_stop():
     sudo("service designate-api stop")
 
+
 def designate_central_start():
     designate_central_stop()
     sudo("service designate-central start")
 
+
 def designate_central_stop():
     sudo("service designate-central stop")
+
 
 def add_repos():
     """Clean and Add necessary repositories and updates"""
@@ -144,9 +141,3 @@ def set_config_file(mysql_username='designate', mysql_password='stackops',
     utils.set_option(POWERDNS_CONF, 'gmysql-user', mysql_username)
     utils.set_option(POWERDNS_CONF, 'gmysql-password', mysql_password)
     utils.set_option(POWERDNS_CONF, 'gmysql-dnssec', 'yes')
-
-
-
-
-
-
