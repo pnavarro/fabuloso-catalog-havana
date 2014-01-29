@@ -27,6 +27,8 @@ LBAAS_AGENT_CONF = '/etc/neutron/lbaas_agent.ini'
 
 OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 
+ML2_PLUGIN_CONF = '/etc/neutron/plugins/ml2/ml2_conf.ini'
+
 NEUTRON_CONF = '/etc/neutron/neutron.conf'
 
 NEUTRON_METADATA_CONF = '/etc/neutron/metadata_agent.ini'
@@ -83,7 +85,8 @@ def neutron_metadata_agent_start():
 
 
 def neutron_lbaas_agent_stop():
-    sudo("service neutron-lbaas-agent stop")
+    with settings(warn_only=True):
+        sudo("service neutron-lbaas-agent stop")
 
 
 def neutron_lbaas_agent_start():
@@ -158,21 +161,13 @@ def configure_network():
     sudo("echo 1 > /proc/sys/net/ipv4/ip_forward")
 
 
-def install(cluster=False, iface_ex="eth2"):
+def install(cluster=False):
     """Generate neutron configuration. Execute on both servers"""
-    if iface_ex is None:
-        puts("{'error':'You need to pass the physical interface as argument "
-             "of the external bridge'}")
-        return
     configure_ubuntu_packages()
     if cluster:
         stop()
     configure_network()
     openvswitch_start()
-    with settings(warn_only=True):
-        sudo('ovs-vsctl del-br br-ex')
-    sudo('ovs-vsctl add-br br-ex')
-    sudo('ovs-vsctl add-port br-ex %s' % iface_ex)
     sudo('update-rc.d neutron-dhcp-agent defaults 98 02')
     sudo('update-rc.d neutron-l3-agent defaults 98 02')
     sudo('update-rc.d neutron-plugin-openvswitch-agent defaults 98 02')
@@ -214,33 +209,102 @@ def configure_ovs_plugin_gre(ip_tunnel='127.0.0.1', tunnel_start='1',
     neutron_plugin_openvswitch_agent_start()
 
 
-def configure_ovs_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
+def configure_ml2_plugin_vxlan(neutron_mysql_username='neutron',
+                              neutron_mysql_password='stackops',
+                              mysql_host='127.0.0.1', mysql_port='3306',
+                              neutron_mysql_schema='neutron',
+                              local_ip='127.0.0.1'):
+    # TODO Fix that when ml2-neutron-plugin will be added in icehouse
+    sudo('mkdir -p /etc/neutron/plugins/ml2')
+    sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ovs] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2_type_vxlan] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [agent] >> %s' % OVS_PLUGIN_CONF)
+    # ML2 section
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vxlan',
+                     section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'type_drivers',
+                     'local,flat,vlan,gre,vxlan', section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'mechanism_drivers',
+                     'openvswitch,linuxbridge', section='ml2')
+    # ml2_type_vxlan section
+    utils.set_option(OVS_PLUGIN_CONF, 'vni_ranges', '1:1000',
+                     section='ml2_type_vxlan')
+    # ovs section
+    utils.set_option(OVS_PLUGIN_CONF, 'local_ip', local_ip, section='ovs')
+    utils.set_option(OVS_PLUGIN_CONF, 'enable_tunneling', 'True',
+                     section='ovs')
+    # database section
+    utils.set_option(OVS_PLUGIN_CONF, 'connection',
+                     utils.sql_connect_string(mysql_host, neutron_mysql_password,
+                                              mysql_port, neutron_mysql_schema,
+                                              neutron_mysql_username),
+                     section='database')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
+    utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
+                     'sudo neutron-rootwrap '
+                     '/etc/neutron/rootwrap.conf', section='agent')
+    utils.set_option(OVS_PLUGIN_CONF, 'tunnel_types', 'vxlan',
+                     section='agent')
+    with settings(warn_only=True):
+        sudo('ovs-vsctl del-br br-int')
+    sudo('ovs-vsctl add-br br-int')
+    openvswitch_start()
+    neutron_plugin_openvswitch_agent_start()
+
+
+def configure_ml2_plugin_vlan(iface_bridge='eth1', br_postfix='eth1',
                               vlan_start='1', vlan_end='4094',
                               mysql_username='neutron',
                               mysql_password='stackops',
                               mysql_host='127.0.0.1',
                               mysql_port='3306', mysql_schema='neutron'):
-    utils.set_option(OVS_PLUGIN_CONF, 'sql_connection',
-                     utils.sql_connect_string(mysql_host,
-                                              mysql_password,
+    # TODO Fix that when ml2-neutron-plugin will be added in icehouse
+    sudo('mkdir -p /etc/neutron/plugins/ml2')
+    sudo('ln -s %s %s' %(OVS_PLUGIN_CONF, ML2_PLUGIN_CONF))
+    sudo('echo "''" > %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ml2_type_vlan] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [ovs] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [database] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [securitygroup] >> %s' % OVS_PLUGIN_CONF)
+    sudo('echo [agent] >> %s' % OVS_PLUGIN_CONF)
+    # ML2 section
+    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_types', 'vlan',
+                     section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'type_drivers',
+                     'local,flat,vlan,gre,vxlan', section='ml2')
+    utils.set_option(OVS_PLUGIN_CONF, 'mechanism_drivers',
+                     'openvswitch,linuxbridge', section='ml2')
+    # ml2_type_vlan section
+    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
+                     % (vlan_start, vlan_end), section='ml2_type_vlan')
+    utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
+                     'physnet1:br-%s' % br_postfix, section='ovs')
+    # database section
+    utils.set_option(OVS_PLUGIN_CONF, 'connection',
+                     utils.sql_connect_string(mysql_host, mysql_password,
                                               mysql_port, mysql_schema,
                                               mysql_username),
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'reconnect_interval', '2',
-                     section='DATABASE')
-    utils.set_option(OVS_PLUGIN_CONF, 'tenant_network_type',
-                     'vlan', section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'network_vlan_ranges', 'physnet1:%s:%s'
-                     % (vlan_start, vlan_end), section='OVS')
-    utils.set_option(OVS_PLUGIN_CONF, 'bridge_mappings',
-                     'physnet1:br-%s' % iface_bridge, section='OVS')
+                     section='database')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+    # agent section
     utils.set_option(OVS_PLUGIN_CONF, 'root_helper',
-                     'sudo /usr/bin/neutron-rootwrap '
-                     '/etc/neutron/rootwrap.conf', section='AGENT')
-    #utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
-    #                 'neutron.agent.linux.iptables_firewall.'
-    #                 'OVSHybridIptablesFirewallDriver',
-    # section='securitygroup')
+                     'sudo neutron-rootwrap /etc/neutron/rootwrap.conf',
+                     section='agent')
     with settings(warn_only=True):
         sudo('ovs-vsctl del-br br-int')
     sudo('ovs-vsctl add-br br-int')
@@ -258,8 +322,8 @@ def configure_lbaas_agent():
     utils.set_option(LBAAS_AGENT_CONF, 'interface_driver',
                      'neutron.agent.linux.interface.OVSInterfaceDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'device_driver',
-                     'neutron.plugins.services.agent_loadbalancer.drivers.'
-                     'haproxy.namespace_driver.HaproxyNSDriver')
+                     'neutron.services.loadbalancer.drivers.haproxy.'
+                     'namespace_driver.HaproxyNSDriver')
     utils.set_option(LBAAS_AGENT_CONF, 'user_group', 'haproxy')
     #utils.set_option(LBAAS_AGENT_CONF, 'ovs_use_veth', 'True')
 
@@ -278,7 +342,7 @@ def configure_metadata_agent(user='neutron', password='stackops',
     utils.set_option(NEUTRON_METADATA_CONF, 'nova_metadata_ip', metadata_ip)
     utils.set_option(NEUTRON_METADATA_CONF, 'nova_metadata_port', '8775')
     utils.set_option(NEUTRON_METADATA_CONF,
-                     'neutron_metadata_proxy_shared_secret', 'password')
+                     'metadata_proxy_shared_secret', 'password')
 
 
 def configure_l3_agent(user='neutron', password='stackops',
@@ -298,8 +362,6 @@ def configure_l3_agent(user='neutron', password='stackops',
                      'sudo neutron-rootwrap /etc/neutron/rootwrap.conf')
     utils.set_option(L3_AGENT_CONF, 'metadata_ip', metadata_ip)
     utils.set_option(L3_AGENT_CONF, 'use_namespaces', 'True')
-    utils.set_option(L3_AGENT_CONF, 'interface_driver',
-                     'neutron.agent.linux.interface.OVSInterfaceDrive')
     #utils.set_option(L3_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
@@ -309,13 +371,16 @@ def configure_dhcp_agent(name_server='8.8.8.8'):
     utils.set_option(DHCP_AGENT_CONF, 'dhcp_driver',
                      'neutron.agent.linux.dhcp.Dnsmasq')
     utils.set_option(DHCP_AGENT_CONF, 'interface_driver',
-                     'neutron.agent.linux.interface.OVSInterfaceDrive')
+                     'neutron.agent.linux.interface.OVSInterfaceDriver')
     #utils.set_option(DHCP_AGENT_CONF, 'ovs_use_veth', 'True')
 
 
 def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     auth_port='35357', auth_protocol='http', tenant='service',
-                    rabbit_password='guest', rabbit_host='127.0.0.1'):
+                    rabbit_password='guest', rabbit_host='127.0.0.1',
+                    mysql_username='neutron', mysql_password='stackops',
+                    mysql_schema='neutron', mysql_host='127.0.0.1',
+                    mysql_port='3306'):
 
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
@@ -329,18 +394,24 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol', auth_protocol,
                      section='filter:authtoken')
-    cp = 'neutron.plugins.openvswitch.ovs_neutron_plugin.OVSNeutronPluginV2'
+    auth_uri = 'http://' + auth_host + ':5000'
+    utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
+                     auth_uri, section='filter:authtoken')
+    cp = 'neutron.plugins.ml2.plugin.Ml2Plugin'
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
     utils.set_option(NEUTRON_CONF, 'auth_strategy', 'keystone')
     utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
     utils.set_option(NEUTRON_CONF, 'rabbit_password', rabbit_password)
     utils.set_option(NEUTRON_CONF, 'rabbit_host', rabbit_host)
     utils.set_option(NEUTRON_CONF, 'notification_driver',
-                     'neutron.openstack.common.notifier.rabbit_notifier')
+                     'neutron.openstack.common.notifier.rpc_notifier')
     utils.set_option(NEUTRON_CONF, 'notification_topics',
                      'notifications,monitor')
     utils.set_option(NEUTRON_CONF, 'default_notification_level', 'INFO')
     utils.set_option(NEUTRON_CONF, 'core_plugin', cp)
+    utils.set_option(NEUTRON_CONF, 'connection', utils.sql_connect_string(
+        mysql_host, mysql_password, mysql_port, mysql_schema, mysql_username),
+                     section='database')
     utils.set_option(NEUTRON_CONF, 'admin_tenant_name',
                      tenant, section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'admin_user',
@@ -355,6 +426,23 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      section='keystone_authtoken')
     utils.set_option(NEUTRON_CONF, 'auth_protocol', auth_protocol,
                      section='keystone_authtoken')
+    utils.set_option(NEUTRON_CONF, 'allow_overlapping_ips', 'True')
+    # security group section
+    utils.set_option(OVS_PLUGIN_CONF, 'firewall_driver',
+                     'neutron.agent.linux.iptables_firewall.'
+                     'OVSHybridIptablesFirewallDriver',
+                     section='securitygroup')
+
+
+def configure_fwaas_service():
+    utils.set_option(NEUTRON_CONF, 'service_plugins',
+                     'neutron.services.loadbalancer.plugin.LoadBalancerPlugin, '
+                     'neutron.services.firewall.fwaas_plugin.FirewallPlugin')
+    utils.set_option(NEUTRON_CONF, 'driver',
+                     'neutron.services.firewall.drivers.linux.'
+                     'iptables_fwaas.IptablesFwaasDriver', section='fwaas')
+    utils.set_option(NEUTRON_CONF, 'enabled', 'True', section='fwaas')
+    start()
 
 
 def configure_external_bridge(floating_range):

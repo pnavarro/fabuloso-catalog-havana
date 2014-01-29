@@ -1,5 +1,5 @@
-name: mysql
-file: mysql.py
+name: galera
+file: galera.py
 description: MySQL database component
 provider: fabric
 
@@ -8,6 +8,17 @@ Services:
       description: Stop the mysql service
       methods:
           - stop
+    - name: install_first
+      description: Prepares a database and a user password for each StackOps schemas
+      methods:
+          - configure_first
+          - start
+          - setup_keystone
+          - setup_nova
+          - setup_glance
+          - setup_cinder
+          - setup_neutron
+          - setup_automation
     - name: install
       description: Prepares a database and a user password for each StackOps schemas
       methods:
@@ -19,7 +30,6 @@ Services:
           - setup_cinder
           - setup_neutron
           - setup_automation
-          - setup_designate
     - name: configure_without_install
       description: Configure a database and a user password for each StackOps schemas
       methods:
@@ -60,10 +70,6 @@ Services:
       description: Creates a new database for automation and grants privileges on it
       methods:
           - setup_automation
-    - name: set_designate
-      description: Creates a new database for designate and grants privileges on it
-      methods:
-          - setup_designate
     - name: validate
       description: Validates main database to operate with it
       methods:

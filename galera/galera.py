@@ -23,22 +23,45 @@ The following are the services available:
 """
 from fabric.api import sudo, settings
 from cuisine import package_ensure
-from fabuloso import fabuloso
+from fabuloso import fabuloso, utils
 
 
-def configure(root_pass='stackops'):
+def configure_first(root_pass='stackops'):
     """Generate mysql configuration. Execute on both servers"""
     __configure_ubuntu_packages(root_pass)
     stop()
 
     #sudo('echo "manual" >> /etc/init/mysql.override')
-    sudo('chmod -R og=rxw /var/lib/mysql')
-    sudo('chown -R mysql:mysql /var/lib/mysql')
-    start()
-    sudo("sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf")
-    sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
-         'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
-         % (root_pass, root_pass))
+
+    sudo("echo '[mysql]' >> /etc/mysql/conf.d/mariadb.cnf")
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_cluster_address', "\'gcomm://\'", section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_provider', '/usr/lib/galera/libgalera_smm.so', section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_retry_autocommit', '0', section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_sst_method', 'rsync', section='mysqld')
+
+    #sudo("sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf")
+    #sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
+    #     'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
+    #     % (root_pass, root_pass))
+
+def configure(root_pass='stackops', galera_master_ip=None):
+    """Generate mysql configuration. Execute on both servers"""
+    __configure_ubuntu_packages(root_pass)
+    stop()
+
+    #sudo('echo "manual" >> /etc/init/mysql.override')
+
+    sudo("echo '[mysql]' >> /etc/mysql/conf.d/mariadb.cnf")
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_cluster_address', "\'gcomm://%s\'" % galera_master_ip , section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_provider', '/usr/lib/galera/libgalera_smm.so', section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_retry_autocommit', '0', section='mysqld')
+    utils.set_option('/etc/mysql/conf.d/mariadb.cnf', 'wsrep_sst_method', 'rsync', section='mysqld')
+
+    #sudo("sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf")
+    #sudo("""mysql -uroot -p%s -e "GRANT ALL PRIVILEGES ON *.* TO
+     #    'root'@'%%' IDENTIFIED BY '%s' WITH GRANT OPTION;" """
+     #    % (root_pass, root_pass))
+
 
 
 def start():
@@ -48,14 +71,18 @@ def start():
 
 def __configure_ubuntu_packages(root_pass='stackops'):
     """Configure mysql ubuntu packages"""
-    sudo('echo mysql-server-5.5 mysql-server/root_password password %s'
+    sudo('echo "deb http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main" > /etc/apt/sources.list.d/mariadb.list')
+    sudo('echo "deb-src http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main" >> /etc/apt/sources.list.d/mariadb.list')
+    sudo('apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db') 
+    sudo('apt-get update')	
+    sudo('echo mariadb-galera-server-5.5 mysql-server/root_password password %s'
          ' | debconf-set-selections' % root_pass)
-    sudo('echo mysql-server-5.5 mysql-server/root_password_again password %s'
+    sudo('echo mariadb-galera-server-5.5 mysql-server/root_password_again password %s'
          ' | debconf-set-selections' % root_pass)
-    sudo('echo mysql-server-5.5 mysql-server/start_on_boot boolean true'
+    sudo('echo mariadb-galera.server-5.5 mysql-server-5.1/start_on_boot boolean true'
          ' | debconf-set-selections')
-    package_ensure('mysql-server')
-    package_ensure('python-mysqldb')
+    package_ensure('mariadb-galera-server')
+    package_ensure('galera')
 
 
 def stop():
@@ -136,13 +163,6 @@ def setup_automation(root_pass='stackops', automation_user='automation',
                      automation_password='stackops'):
     setup_schema(username=automation_user, password=automation_password,
                  schema_name='stackopshead', root_pass=root_pass)
-
-def setup_designate(root_pass='stackops', designate_user='designate',
-                     powerdns_user= 'powerdns', designate_password='stackops'):
-    setup_schema(username=designate_user, password=designate_password,
-                 schema_name='designate', root_pass=root_pass)
-    setup_schema(username=powerdns_user, password=designate_password,
-                 schema_name='powerdns', root_pass=root_pass)
 
 
 def configure_all_schemas(root_pass='stackops', password='stackops',

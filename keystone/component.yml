@@ -7,7 +7,27 @@ Services:
       methods:
           - install
           - set_config_file
+          - db_installation
           - configure_users
+          - define_keystone_service
+          - define_nova_service
+          - define_ec2_service
+          - define_glance_service
+          - define_neutron_service
+          - define_cinder_service
+          - define_portal_service
+          - define_accounting_service
+          - define_chargeback_service
+          - define_swift_service
+          - define_dnsaas_service
+    - name: install_no_db
+      description:  Install OpenStack Keystone from ubuntu packages
+      methods:
+          - install
+          - set_config_file
+    - name: register_region
+      description: Register new services in the new region
+      methods:
           - define_keystone_service
           - define_nova_service
           - define_ec2_service

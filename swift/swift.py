@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os.path
+import tempfile
 
+from fabric.api import get, put, warn_only, settings
 from cuisine import *
 
 
@@ -27,11 +29,6 @@ RINGS = ('account', 'container', 'object')
 
 
 def install_common_packages():
-    # TODO(jaimegildesagredo): Remove this line when swift is packaged
-    #                          in the stackops repos
-
-    _ensure_cloud_repos()
-
     package_ensure('swift')
 
 
@@ -70,14 +67,52 @@ def create_rings(devices, part_power=18, replicas=3, min_part_hours=1):
                     device['name'],
                     device['weight'])
 
+
+def rebalance_rings():
+    with cd(CONF_DIR):
         for name in RINGS:
             builder = '{}.builder'.format(name)
             ring = '{}.ring.gz'.format(name)
 
-            _rebalance_ring(builder)
+            with warn_only():
+                _rebalance_ring(builder)
 
             with mode_sudo():
                 file_attribs(ring, **OWNER)
+
+
+def deploy_rings(nodes):
+    local_path = tempfile.mkdtemp(prefix='swift-rings')
+
+    # Download the built rings from the target node
+    with cd(CONF_DIR):
+        get('*.ring.gz', local_path)
+
+    # Upload rings to each node
+    for node in nodes:
+        with settings(host_string=node):
+            for ring in ('{}.ring.gz'.format(name) for name in RINGS):
+                put(os.path.join(local_path, ring), CONF_DIR, use_sudo=True)
+
+                with cd(CONF_DIR), mode_sudo():
+                    file_attribs(ring, **OWNER)
+
+
+def add_device_to_rings(zone, host, name, weight=100,
+                        account_port=6002, container_port=6001,
+                        object_port=6000):
+
+    with cd(CONF_DIR):
+        for ring_name in RINGS:
+            builder = '{}.builder'.format(ring_name)
+
+            _add_device_to_ring(
+                builder,
+                zone,
+                host,
+                locals()['{}_port'.format(ring_name)],
+                name,
+                weight)
 
 
 def _create_ring_builder(name, part_power, replicas, min_part_hours):
@@ -101,12 +136,6 @@ def _ring_builder(*args):
     command.insert(0, 'swift-ring-builder')
 
     return ' '.join(command)
-
-
-def _ensure_cloud_repos():
-    repository_ensure_apt("'deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main'")
-    package_ensure('ubuntu-cloud-keyring')
-    package_update()
 
 
 def _template(name, data):

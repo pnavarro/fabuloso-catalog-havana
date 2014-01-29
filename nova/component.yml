@@ -8,7 +8,15 @@ Services:
       methods:
           - install
           - set_config_file
+          - db_installation
           - start
+    - name: install_no_db
+      description: Install OpenStack Nova from ubuntu packages
+      methods:
+          - install
+          - set_config_file
+          - start
+          - consoleauth_stop
     - name: nova_properties
       description: Set properties of the Nova service
       methods:

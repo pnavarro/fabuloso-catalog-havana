@@ -178,8 +178,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
                     auth_port='35357', auth_protocol='http',
                     mysql_username='nova', mysql_password='stackops',
                     mysql_schema='nova', tenant='service',
-                    mysql_host='127.0.0.1',
-                    mysql_port='3306'):
+                    mysql_host='127.0.0.1', mysql_port='3306',
+                    rabbit_host='127.0.0.1', rabbit_password='guest'):
 
     f = '/etc/nova/api-paste.ini'
     sudo('sed -i "/volume/d" %s' % f)
@@ -196,8 +196,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
     sudo("sed -i 's/auth_protocol.*$/auth_protocol = %s/g' %s"
          % (auth_protocol, f))
     auth_uri = 'http://' + auth_host + ':5000/v2.0'
-    sudo("sed -i 's/auth_uri.*$/auth_uri = %s/g' %s"
-         % (auth_uri, f))
+    #sudo("sed -i 's/auth_url.*$/auth_url = %s/g' %s"
+    #     % (auth_uri, f))
 
     if management_ip is None:
         puts("{error:'Management IP of the node needed as argument'}")
@@ -209,6 +209,9 @@ def set_config_file(management_ip, user='nova', password='stackops',
                  'nova.scheduler.filter_scheduler.FilterScheduler')
     set_property('compute_scheduler_driver',
                      'nova.scheduler.filter_scheduler.FilterScheduler')
+    set_property('scheduler_default_filters',
+                 'AggregateInstanceExtraSpecsFilter,AvailabilityZoneFilter,'
+                 'RamFilter,ComputeFilter')
     set_property('auth_strategy', 'keystone')
     #set_property('allow_admin_api', 'true')
     #set_property('use_deprecated_auth', 'false')
@@ -237,8 +240,10 @@ def set_config_file(management_ip, user='nova', password='stackops',
                  'nfs=nova.virt.libvirt.volume_nfs.NfsVolumeDriver"')
     set_property('linuxnet_interface_driver',
                  'nova.network.linux_net.LinuxOVSInterfaceDriver')
+    # Change for havana to use the neutron fw and security group
     set_property('firewall_driver',
-                 'nova.virt.libvirt.firewall.IptablesFirewallDriver')
+                 'nova.virt.firewall.NoopFirewallDriver')
+    set_property('security_group_api', 'neutron')
     set_property('volume_api_class', 'nova.volume.cinder.API')
     set_property('cinder_catalog_info', 'volume:cinder:internalURL')
     set_property('image_service', 'nova.image.glance.GlanceImageService')
@@ -249,6 +254,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('lock_path', '/var/lock/nova')
     set_property('root_helper', 'sudo nova-rootwrap /etc/nova/rootwrap.conf')
     set_property('verbose', 'true')
+    set_property('rabbit_host', rabbit_host)
+    set_property('rabbit_password', rabbit_password)
     set_property('rpc_backend', 'nova.rpc.impl_kombu')
     set_property('notification_driver',
                  'nova.openstack.common.notifier.rabbit_notifier')
@@ -271,6 +278,9 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('quota_security_groups', '10')
     # NOVA-SCHEDULER configruration
     set_property('cpu_allocation_ratio', '8.0')
+
+
+def db_installation():
     sudo('nova-manage db sync')
 
 

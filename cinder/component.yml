@@ -8,6 +8,12 @@ Services:
       methods:
           - install
           - set_config_file
+          - db_installation
+    - name: install_no_db
+      description: Install cinder and configure it
+      methods:
+          - install
+          - set_config_file
     - name: start
       description: Start the cinder service
       methods: 

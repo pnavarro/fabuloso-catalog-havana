@@ -79,7 +79,8 @@ def set_config_file(user='glance', password='stackops',
                     mysql_schema='glance',
                     tenant='service', mysql_host='127.0.0.1',
                     mysql_port='3306', auth_port='35357', auth_protocol='http',
-                    auth_host='127.0.0.1'):
+                    auth_host='127.0.0.1', rabbit_host='127.0.0.1',
+                    rabbit_password='guest'):
     utils.set_option(GLANCE_API_CONFIG, 'enable_v1_api', 'True')
     utils.set_option(GLANCE_API_CONFIG, 'enable_v2_api', 'True')
     for f in ['/etc/glance/glance-api.conf',
@@ -107,10 +108,23 @@ def set_config_file(user='glance', password='stackops',
     utils.set_option(GLANCE_API_CONFIG,
                      'flavor', 'keystone',
                      section='paste_deploy')
-    utils.set_option(GLANCE_API_CONFIG,
+    utils.set_option(GLANCE_REGISTRY_CONFIG,
                      'flavor', 'keystone',
                      section='paste_deploy')
+    # Doc says that Glance is not using oslo notifier, decomment this when
+    # it recommends to use it
+    #utils.set_option(GLANCE_API_CONFIG, 'rpc_backend', 'nova.openstack.common.'
+    #                                                   'rpc.impl_kombu')
+    #utils.set_option(GLANCE_API_CONFIG, 'notification_driver',
+    #                 'nova.openstack.common.notifier.rpc_notifier')
+    utils.set_option(GLANCE_API_CONFIG, 'rabbit_host', rabbit_host)
+    utils.set_option(GLANCE_API_CONFIG, 'rabbit_password', rabbit_password)
 
+    utils.set_option(GLANCE_API_CONFIG, 'notification_topics',
+                     'notifications,monitor')
+    utils.set_option(GLANCE_API_CONFIG, 'notifier_strategy',
+                     'rabbit')
+    utils.set_option(GLANCE_API_CONFIG, 'default_notification_level', 'INFO')
     utils.set_option(GLANCE_REGISTRY_PASTE_INI, 'pipeline',
                      'authtoken context registryapp',
                      section='pipeline:glance-registry-keystone')
@@ -131,7 +145,8 @@ def set_config_file(user='glance', password='stackops',
          "/etc/glance/glance-api.conf")
     sudo("sed -i 's/^#flavor=.*$/flavor=keystone/g' "
          "/etc/glance/glance-registry.conf")
-    start()
+
+def db_installation():
     sudo("glance-manage version_control 0")
     sudo("glance-manage db_sync")
 
@@ -161,8 +176,9 @@ def configure_nfs_storage(nfs_server, delete_content=False,
     sudo('sed -i "#%s#d" /etc/fstab' % GLANCE_IMAGES)
     sudo('echo "\n%s" >> /etc/fstab' % mpoint)
     sudo('mount -a')
-    if set_glance_owner:
-        sudo('chown glance:glance -R %s' % GLANCE_IMAGES)
+    with settings(warn_only=True):
+        if set_glance_owner:
+            sudo('chown glance:glance -R %s' % GLANCE_IMAGES)
     start()
 
 
@@ -209,3 +225,29 @@ def validate_database(database_type, username, password, host, port,
 def validate_credentials(user, password, tenant, endpoint, admin_token):
     fab = fabuloso.Fabuloso()
     fab.validate_credentials(user, password, tenant, endpoint, admin_token)
+
+
+def configure_swift_store(auth_uri='https://'
+                                   'identity.api.rackspacecloud.com/v2.0',
+                          swift_store_user='user',
+                          swift_store_password='password',
+                          swift_store_container='glance'):
+    utils.set_option(GLANCE_API_CONFIG, 'default_store', 'swift')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_auth_version', '2')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_auth_address',
+                     auth_uri)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_user',
+                     swift_store_user)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_key',
+                     swift_store_password)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_container',
+                     swift_store_container)
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_create_container_on_put',
+                     'True')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_large_object_size',
+                     '5120')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_store_large_object_chunk_size',
+                     '1024')
+    utils.set_option(GLANCE_API_CONFIG, 'swift_enable_snet',
+                     'False')
+    start()

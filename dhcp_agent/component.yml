@@ -1,0 +1,21 @@
+name: dhcp_agent
+file: dhcp_agent.py
+description: DHCP agent
+
+Services:
+    - name: install
+      description: Install and configure the dhcp agent
+      methods:
+          - install
+          - configure_dhcp_agent
+          - set_config_file
+          - start
+          - post_configuration
+    - name: enable_dhcp_agent
+      description: enables the dhcp agent
+      methods:
+          - enable_dhcp_agent
+    - name: disable_dhcp_agent
+      description: disables the dhcp agent
+      methods:
+          - disable_dhcp_agent
