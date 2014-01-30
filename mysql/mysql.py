@@ -71,7 +71,7 @@ def setup_schema(mysql_host='127.0.0.1',root_pass='stackops', username=None,
     sudo('mysql -h %s -u root -p%s -e "CREATE DATABASE %s;"' % (mysql_host,
                                                                 root_pass,
                                                                 schema_name))
-    if host is not None:
+    if (host is not None) and ('localhost' not in host) :
         sudo("""mysql -h %s -u root -p%s -e "GRANT ALL PRIVILEGES ON %s.* TO
              '%s'@'%s' IDENTIFIED BY '%s';" """
              % (mysql_host, root_pass, schema_name, username, host, password))
@@ -85,64 +85,76 @@ def setup_schema(mysql_host='127.0.0.1',root_pass='stackops', username=None,
 
 
 def setup_keystone(root_pass='stackops', keystone_user='keystone',
-                   keystone_password='stackops'):
+                   keystone_password='stackops', host_allowed='localhost'):
     setup_schema(username=keystone_user, password=keystone_password,
-                 schema_name='keystone', root_pass=root_pass)
+                 schema_name='keystone', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_nova(root_pass='stackops', nova_user='nova',
-               nova_password='stackops'):
+               nova_password='stackops', host_allowed='localhost'):
     setup_schema(username=nova_user, password=nova_password,
-                 schema_name='nova', root_pass=root_pass)
+                 schema_name='nova', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_glance(root_pass='stackops', glance_user='glance',
-                 glance_password='stackops'):
+                 glance_password='stackops', host_allowed='localhost'):
     setup_schema(username=glance_user, password=glance_password,
-                 schema_name='glance', root_pass=root_pass)
+                 schema_name='glance', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_cinder(root_pass='stackops', cinder_user='cinder',
-                 cinder_password='stackops'):
+                 cinder_password='stackops', host_allowed='localhost'):
     setup_schema(username=cinder_user, password=cinder_password,
-                 schema_name='cinder', root_pass=root_pass)
+                 schema_name='cinder', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_neutron(root_pass='stackops', neutron_user='neutron',
-                  neutron_password='stackops'):
+                  neutron_password='stackops', host_allowed='localhost'):
     setup_schema(username=neutron_user, password=neutron_password,
-                 schema_name='neutron', root_pass=root_pass)
+                 schema_name='neutron', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_portal(root_pass='stackops', portal_user='portal',
-                 portal_password='stackops'):
+                 portal_password='stackops', host_allowed='localhost'):
     setup_schema(username=portal_user, password=portal_password,
-                 schema_name='portal', root_pass=root_pass)
+                 schema_name='portal', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_accounting(root_pass='stackops', accounting_user='activity',
-                     accounting_password='stackops'):
+                     accounting_password='stackops', host_allowed='localhost'):
     setup_schema(username=accounting_user, password=accounting_password,
-                 schema_name='activity', root_pass=root_pass)
+                 schema_name='activity', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def setup_chargeback(root_pass='stackops', chargeback_user='chargeback',
-                     chargeback_password='stackops'):
+                     chargeback_password='stackops', host_allowed='localhost'):
     setup_schema(username=chargeback_user, password=chargeback_password,
                  schema_name='chargeback', root_pass=root_pass)
 
 
 def setup_automation(root_pass='stackops', automation_user='automation',
-                     automation_password='stackops'):
+                     automation_password='stackops', host_allowed='localhost'):
     setup_schema(username=automation_user, password=automation_password,
-                 schema_name='stackopshead', root_pass=root_pass)
+                 schema_name='stackopshead', root_pass=root_pass,
+                 host=host_allowed)
+
 
 def setup_designate(root_pass='stackops', designate_user='designate',
-                     powerdns_user= 'powerdns', designate_password='stackops'):
+                     powerdns_user= 'powerdns', designate_password='stackops',
+                     host_allowed='localhost'):
     setup_schema(username=designate_user, password=designate_password,
-                 schema_name='designate', root_pass=root_pass)
+                 schema_name='designate', root_pass=root_pass,
+                 host=host_allowed)
     setup_schema(username=powerdns_user, password=designate_password,
-                 schema_name='powerdns', root_pass=root_pass)
+                 schema_name='powerdns', root_pass=root_pass,
+                 host=host_allowed)
 
 
 def configure_all_schemas(root_pass='stackops', password='stackops',
@@ -169,6 +181,9 @@ def configure_all_schemas(root_pass='stackops', password='stackops',
                  root_pass=root_pass, password=password,
                  mysql_host=mysql_host, host=host_allowed)
     setup_schema(username='chargeback', schema_name='chargeback',
+                 root_pass=root_pass, password=password, mysql_host=mysql_host,
+                 host=host_allowed)
+    setup_schema(username='designate', schema_name='designate',
                  root_pass=root_pass, password=password, mysql_host=mysql_host,
                  host=host_allowed)
 
