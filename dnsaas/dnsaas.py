@@ -61,6 +61,7 @@ def pdns_stop():
 
 def designate_api_start():
     designate_api_stop()
+    sudo("service designate-api start")
 
 
 def designate_api_stop():
