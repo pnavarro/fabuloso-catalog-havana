@@ -56,14 +56,17 @@ def pdns_start():
 
 
 def pdns_stop():
-    sudo("service pdns stop")
+    with settings(warn_only=True):
+        sudo("service pdns stop")
 
 
 def designate_api_start():
     designate_api_stop()
 
+
 def designate_api_stop():
-    sudo("service designate-api stop")
+    with settings(warn_only=True):
+        sudo("service designate-api stop")
 
 
 def designate_central_start():
@@ -72,7 +75,8 @@ def designate_central_start():
 
 
 def designate_central_stop():
-    sudo("service designate-central stop")
+    with settings(warn_only=True):
+        sudo("service designate-central stop")
 
 
 def add_repos():
@@ -89,12 +93,19 @@ def set_config_file(mysql_username='designate', mysql_password='stackops',
                     mysql_schema_designate ='designate',
                     mysql_schema_powerdns ='powerdns', user='designate',
                     password='stackops', auth_host='127.0.0.1',
-                    auth_port='35357', auth_protocol='http', tenant='service'):
-    utils.set_option(DESIGNATE_CONF, 'service:api',
-                     'auth_strategy', 'keystone')
-    utils.set_option(DESIGNATE_CONF, 'service:api',
-                     'enabled_extensions_v1',
-                     'diagnostics, quotas, reports, sync')
+                    auth_port='35357', auth_protocol='http', tenant='service',
+                    rabbit_password='guest', rabbit_host='localhost'):
+    utils.set_option(DESIGNATE_CONF, 'rpc_backend',
+                     'designate.openstack.common.rpc.impl_kombu')
+    utils.set_option(DESIGNATE_CONF, 'rabbit_password', rabbit_password)
+    utils.set_option(DESIGNATE_CONF, 'rabbit_host', rabbit_host)
+    utils.set_option(DESIGNATE_CONF, 'notification_driver',
+                     'designate.openstack.common.notifier.rabbit_notifier')
+    utils.set_option(DESIGNATE_CONF, 'auth_strategy', 'keystone',
+                     section='service:api')
+    utils.set_option(DESIGNATE_CONF, 'enabled_extensions_v1',
+                     'diagnostics, quotas, reports, sync',
+                     section='service:api')
     utils.set_option(DESIGNATE_CONF, 'admin_tenant_name',
                      tenant, section='keystone_authtoken')
     utils.set_option(DESIGNATE_CONF, 'admin_user',
@@ -134,10 +145,17 @@ def set_config_file(mysql_username='designate', mysql_password='stackops',
     sudo('designate-manage powerdns database-sync')
 
     #PowerDNS configuration
-    utils.set_option(POWERDNS_CONF, 'launch', 'gmysql')
-    utils.set_option(POWERDNS_CONF, 'gmysql-host', mysql_host)
-    utils.set_option(POWERDNS_CONF, 'gmysql-port', mysql_port)
-    utils.set_option(POWERDNS_CONF, 'gmysql-dbname', mysql_schema_powerdns)
-    utils.set_option(POWERDNS_CONF, 'gmysql-user', mysql_username)
-    utils.set_option(POWERDNS_CONF, 'gmysql-password', mysql_password)
-    utils.set_option(POWERDNS_CONF, 'gmysql-dnssec', 'yes')
+    sudo("sed -i 's/launch.*$/launch=%s/g' %s"
+         % ('gmysql', POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-host.*$/gmysql-host=%s/g' %s"
+         % (mysql_host, POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-port.*$/gmysql-port=%s/g' %s"
+         % (mysql_port, POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-dbname.*$/gmysql-dbname=%s/g' %s"
+         % (mysql_schema_powerdns, POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-user.*$/gmysql-user=%s/g' %s"
+         % (mysql_username, POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-password.*$/gmysql-password=%s/g' %s"
+         % (mysql_host, POWERDNS_CONF))
+    sudo("sed -i 's/gmysql-dnssec.*$/gmysql-dnssec=%s/g' %s"
+         % ('yes', POWERDNS_CONF))
