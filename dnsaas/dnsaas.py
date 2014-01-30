@@ -33,7 +33,6 @@ def install_packages():
 
 
 def install():
-    add_repos()
     install_packages()
 
 
