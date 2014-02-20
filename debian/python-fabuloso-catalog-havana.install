@@ -22,3 +22,4 @@ galera etc/fabuloso/repos/havana/
 dhcp_agent etc/fabuloso/repos/havana/
 keepalived etc/fabuloso/repos/havana/
 haproxy etc/fabuloso/repos/havana/
+activity etc/fabuloso/repos/havana/
