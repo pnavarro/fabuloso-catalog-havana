@@ -1,0 +1,10 @@
+name: haproxy
+file: haproxy.py
+description: Haproxy Installation
+Services:
+    - name: install
+      description:  Install Haproxy from ubuntu packages
+      methods:
+          - install
+          - stop
+          - configure
