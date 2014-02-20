@@ -432,6 +432,8 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      'neutron.agent.linux.iptables_firewall.'
                      'OVSHybridIptablesFirewallDriver',
                      section='securitygroup')
+    utils.set_option(NEUTRON_CONF, 'quota_driver',
+                     'neutron.db.quota_db.DbQuotaDriver', section='quotas')
 
 
 def configure_fwaas_service():
