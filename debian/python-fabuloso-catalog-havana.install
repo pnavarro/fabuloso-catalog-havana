@@ -21,3 +21,4 @@ nginx etc/fabuloso/repos/havana/
 galera etc/fabuloso/repos/havana/
 dhcp_agent etc/fabuloso/repos/havana/
 keepalived etc/fabuloso/repos/havana/
+haproxy etc/fabuloso/repos/havana/
