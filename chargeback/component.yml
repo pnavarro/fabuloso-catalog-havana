@@ -1,20 +1,18 @@
 name: chargeback
 file: chargeback.py
-description: StackOps Chargeback, Accounting and Activity Component
+description: StackOps Chargeback
 
 Services:
     - name: install
       description: Install and Configure StackOps Chargeback
       methods:
           - configure_ubuntu_packages
-          - configure_activity
           - configure_chargeback
           - start
     - name: install_no_db
       description: Install and Configure StackOps Chargeback
       methods:
           - configure_ubuntu_packages
-          - configure_activity_without_db
           - configure_chargeback_without_db
           - start
     - name: uninstall

@@ -1,0 +1,29 @@
+name: activity
+file: activity.py
+description: StackOps Accounting and Activity Component
+
+Services:
+    - name: install
+      description: Install and Configure StackOps Activity and accounting
+      methods:
+          - configure_ubuntu_packages
+          - configure_activity
+          - start
+    - name: install_no_db
+      description: Install and Configure StackOps Activity and accounting
+      methods:
+          - configure_ubuntu_packages
+          - configure_activity_without_db
+          - start
+    - name: uninstall
+      description: Uninstall StackOps Activity and accounting
+      methods:
+          - uninstall_ubuntu_packages
+    - name: start
+      description: Start tomcat service
+      methods: 
+          - start
+    - name: stop
+      description: Stop tomcat service
+      methods:
+          - stop
