@@ -18,7 +18,6 @@ Services:
           - define_portal_service
           - define_accounting_service
           - define_chargeback_service
-          - define_swift_service
     - name: install_no_db
       description:  Install OpenStack Keystone from ubuntu packages
       methods:
@@ -36,7 +35,6 @@ Services:
           - define_portal_service
           - define_accounting_service
           - define_chargeback_service
-          - define_swift_service
     - name: register_portal
       description: Register the portal service and the endpoint
       methods:
