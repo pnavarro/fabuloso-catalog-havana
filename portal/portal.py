@@ -107,7 +107,7 @@ def configure_activity_license(activity_license_token='SUhIsoHOLNFjt6Drz7W26N'
                              mysql_host, root_pass)
 
 
-def configure_portal_without_db(mysql_username='portal',
+def configure_without_db(mysql_username='portal',
                                 mysql_password='stackops',
                                 admin_token='password',
                                 mysql_admin_password='stackops',
