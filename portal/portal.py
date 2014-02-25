@@ -53,7 +53,7 @@ def configure(mysql_username='portal',
               mysql_schema='portal',
               automation_license_token='vs0QiaN9TA6lIIe3uPSfiG3fs',
               activity_license_token='SUhIsoHOLNFjt6Drz7W26NrNs',
-              install_db='True'):
+              install_db='true'):
     """Generate portal configuration. Execute on both servers"""
     sudo('echo stackops-portal stackops-portal/mysql-install boolean %s '
          '| debconf-set-selections' % install_db)
@@ -121,7 +121,7 @@ def configure_portal_without_db(mysql_username='portal',
     configure(mysql_username, mysql_password, admin_token,
               mysql_admin_password, keystone_url, keystone_admin_url,
               mysql_host, mysql_port, mysql_schema, automation_license_token,
-              activity_license_token, 'False')
+              activity_license_token, 'false')
 
 
 def configure_region(region, mysql_host, root_pass):
