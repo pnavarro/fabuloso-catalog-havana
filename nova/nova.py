@@ -179,7 +179,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
                     mysql_username='nova', mysql_password='stackops',
                     mysql_schema='nova', tenant='service',
                     mysql_host='127.0.0.1', mysql_port='3306',
-                    rabbit_host='127.0.0.1', rabbit_password='guest'):
+                    rabbit_host='127.0.0.1', rabbit_password='guest',
+                    glance_host='127.0.0.1', glance_port='9292'):
 
     f = '/etc/nova/api-paste.ini'
     sudo('sed -i "/volume/d" %s' % f)
@@ -247,6 +248,8 @@ def set_config_file(management_ip, user='nova', password='stackops',
     set_property('volume_api_class', 'nova.volume.cinder.API')
     set_property('cinder_catalog_info', 'volume:cinder:internalURL')
     set_property('image_service', 'nova.image.glance.GlanceImageService')
+    set_property('glance_api_servers', '%s:%s' % (glance_host, glance_port))
+    set_property('glance_host', glance_host)
     set_property('novnc_enable', 'true')
     set_property('vncserver_listen', '0.0.0.0')
     set_property('logdir', '/var/log/nova')
