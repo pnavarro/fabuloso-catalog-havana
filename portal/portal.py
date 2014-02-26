@@ -83,12 +83,12 @@ def configure(mysql_username='portal',
 
 
 def _configure_token_license(app_id, license_token, mysql_host, root_pass):
-        sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "INSERT INTO
-        PORTAL_LICENSING_TOKEN (APP_ID,TOKEN) VALUES ('%(app_id)s',
-        '%(lic_token)s');" portal""" % {'mysql_host':mysql_host,
-                                        'root_pass': root_pass,
-                                        'app_id': app_id,
-                                        'lic_token': license_token})
+    sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "INSERT INTO
+    PORTAL_LICENSING_TOKEN (APP_ID,TOKEN) VALUES ('%(app_id)s',
+    '%(lic_token)s');" portal""" % {'mysql_host':mysql_host,
+                                    'root_pass': root_pass,
+                                    'app_id': app_id,
+                                    'lic_token': license_token})
 
 
 def configure_automation_license(automation_license_token='vs0QiaN9TA6lIIe3uPS'
@@ -124,10 +124,26 @@ def configure_without_db(mysql_username='portal',
               activity_license_token, 'false')
 
 
-def configure_region(region, mysql_host, root_pass):
-        sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "UPDATE
-        PORTAL_SETTINGS SET PROPERTY_VALUE='%(region)s'
-        WHERE PROPERTY_KEE='local.default.region';"
-        portal""" % {'mysql_host': mysql_host, 'root_pass': root_pass,
-                     'region': region})
+def configure_region(region='RegionOne', mysql_host='127.0.0.1',
+                     mysql_admin_password='stackops'):
+    sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "UPDATE
+    PORTAL_SETTINGS SET PROPERTY_VALUE='%(region)s'
+    WHERE PROPERTY_KEE='local.default.region';"
+    portal""" % {'mysql_host': mysql_host, 'root_pass': mysql_admin_password,
+                 'region': region})
+
+def configure_admin_user(admin_user='admin', mysql_host='127.0.0.1',
+                         mysql_admin_password='stackops',
+                         admin_password='stackops',):
+    sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "UPDATE
+    PORTAL_SETTINGS SET PROPERTY_VALUE='%(admin_user)s'
+    WHERE PROPERTY_KEE='local.auth.username';"
+    portal""" % {'mysql_host': mysql_host, 'root_pass': mysql_admin_password,
+                 'admin_user': admin_user})
+    sudo("""mysql -h %(mysql_host)s -uroot -p%(root_pass)s -e "UPDATE
+    PORTAL_SETTINGS SET PROPERTY_VALUE='%(admin_password)s'
+    WHERE PROPERTY_KEE='local.auth.password';"
+    portal""" % {'mysql_host': mysql_host, 'root_pass': mysql_admin_password,
+                 'admin_password': admin_password})
+
 
