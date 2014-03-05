@@ -48,3 +48,7 @@ Services:
       description: Configure the ntp server to point to automation
       methods:
           - configure_ntp
+    - name: add_repos
+      description: Add repositories
+      methods:
+          - add_repos

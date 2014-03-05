@@ -161,13 +161,17 @@ def configure_network():
     sudo("echo 1 > /proc/sys/net/ipv4/ip_forward")
 
 
-def install(cluster=False):
+def install(cluster=False, iface_ex="eth1"):
     """Generate neutron configuration. Execute on both servers"""
     configure_ubuntu_packages()
     if cluster:
         stop()
     configure_network()
     openvswitch_start()
+    with settings(warn_only=True):
+        sudo('ovs-vsctl del-br br-ex')
+    sudo('ovs-vsctl add-br br-ex')
+    sudo('ovs-vsctl add-port br-ex %s' % iface_ex)
     sudo('update-rc.d neutron-dhcp-agent defaults 98 02')
     sudo('update-rc.d neutron-l3-agent defaults 98 02')
     sudo('update-rc.d neutron-plugin-openvswitch-agent defaults 98 02')
