@@ -74,3 +74,7 @@ Services:
       description: Validates main database to operate with it
       methods:
           - validate_database
+    - name: set_designate
+      description: Creates a new database for designate and grants privileges on it
+      methods:
+          - setup_designate
