@@ -12,11 +12,13 @@
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-from fabric.api import settings, sudo
+from fabric.api import settings, sudo, run
+from fabric.operations import put
 from cuisine import package_clean, package_ensure
 from fabuloso import fabuloso
 
 import fabuloso.utils as utils
+import hashlib
 
 NEUTRON_API_PASTE_CONF = '/etc/neutron/api-paste.ini'
 
@@ -25,6 +27,8 @@ OVS_PLUGIN_CONF = '/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini'
 ML2_PLUGIN_CONF = '/etc/neutron/plugins/ml2/ml2_conf.ini'
 
 NEUTRON_CONF = '/etc/neutron/neutron.conf'
+
+OPENRC = '/root/openrc'
 
 
 def neutron_server_stop():
@@ -72,6 +76,11 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                     mysql_username='neutron', mysql_password='stackops',
                     mysql_schema='neutron', mysql_host='127.0.0.1',
                     mysql_port='3306'):
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    sudo('echo OS_TENANT_NAME = service >> %s' % OPENRC)
+    sudo('echo OS_USERNAME = %s >> %s' % (user, OPENRC))
+    sudo('echo OS_PASSWORD = %s >> %s' % (password, OPENRC))
+    sudo("""echo OS_AUTH_URL = "%s" >> %s""" % (auth_uri, OPENRC))
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_tenant_name',
                      tenant, section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'admin_user',
@@ -84,7 +93,6 @@ def set_config_file(user='neutron', password='stackops', auth_host='127.0.0.1',
                      auth_port, section='filter:authtoken')
     utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_protocol',
                      auth_protocol, section='filter:authtoken')
-    auth_uri = 'http://' + auth_host + ':5000/v2.0'
     #utils.set_option(NEUTRON_API_PASTE_CONF, 'auth_uri',
     #                 auth_uri, section='filter:authtoken')
     utils.set_option(NEUTRON_CONF, 'fake_rabbit', 'False')
@@ -229,3 +237,43 @@ def validate_rabbitmq(service_type, host, rport=None, ruser=None,
     fab = fabuloso.Fabuloso()
     fab.send_rabbitMQ(service_type, host, rport, ruser, rpassword,
                       virtual_host)
+
+
+def deploy_and_set_ha_tool(user='neutron', password='stackops',
+                           auth_host='127.0.0.1',):
+    # ensure period checks are offset between multiple l3 agent nodes
+    # and assumes splay will remain constant (i.e. based on hostname)
+    # Generate a uniformly distributed unique number to sleep.
+    auth_uri = 'http://' + auth_host + ':5000/v2.0'
+    sudo('echo OS_TENANT_NAME = service >> %s' % OPENRC)
+    sudo('echo OS_USERNAME = %s >> %s' % (user, OPENRC))
+    sudo('echo OS_PASSWORD = %s >> %s' % (password, OPENRC))
+    sudo("""echo OS_AUTH_URL = "%s" >> %s""" % (auth_uri, OPENRC))
+    m = hashlib.md5()
+    current_hostname = run('hostname')
+    m.update(current_hostname)
+    checksum = m.hexdigest()
+    splay = 3000
+    hex_checksum = long(checksum.encode("hex"))
+    sleep_time = hex_checksum % splay
+    cron_l3_healthcheck_minute = '*/1 * * * *'
+    command = 'sleep %s ; . /root/openrc && /usr/local/bin/neutron-ha-tool.py ' \
+              '--l3-agent-migrate > /dev/null 2>&1' % sleep_time
+    #Deploys the ha tool
+    put('neutron-ha-tool.py', '/usr/local/bin/neutron-ha-tool.py',
+        use_sudo=True)
+    with settings(warn_only=True):
+        sudo('crontab -l > /tmp/crondump')
+    sudo('echo "%s root %s" >> /tmp/crondump' % (cron_l3_healthcheck_minute,
+                                                 command))
+    sudo('crontab /tmp/crondump')
+    neutron_server_stop()
+    put('l3_agent_scheduler.py',
+        '/usr/lib/python2.7/dist-packages/neutron/scheduler/'
+        'l3_agent_scheduler.py',
+        use_sudo=True)
+    utils.set_option(NEUTRON_CONF, 'router_scheduler_driver',
+                     'neutron.scheduler.l3_agent_scheduler.'
+                     'LeastUtilizedScheduler')
+    neutron_server_start()
+
