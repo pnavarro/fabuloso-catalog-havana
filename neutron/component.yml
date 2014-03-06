@@ -29,6 +29,10 @@ Services:
       description: Configure the ml2 plugin vlan
       methods:
           - configure_ml2_plugin_vlan
+    - name: deploy_and_set_ha_tool
+      description: Deploys the HA tool
+      methods:
+          - deploy_and_set_ha_tool
     - name: validate
       description: Validates cinder to operate with it
       methods:
