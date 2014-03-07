@@ -260,7 +260,7 @@ def deploy_and_set_ha_tool(user='neutron', password='stackops',
     command = 'sleep %s ; . /root/openrc && /usr/local/bin/neutron-ha-tool.py ' \
               '--l3-agent-migrate > /dev/null 2>&1' % sleep_time
     #Deploys the ha tool
-    put('neutron-ha-tool.py', '/usr/local/bin/neutron-ha-tool.py',
+    put('/etc/fabuloso/repos/havana/neutron-ha-tool.py', '/usr/local/bin/neutron-ha-tool.py',
         use_sudo=True)
     with settings(warn_only=True):
         sudo('crontab -l > /tmp/crondump')
@@ -268,7 +268,7 @@ def deploy_and_set_ha_tool(user='neutron', password='stackops',
                                                  command))
     sudo('crontab /tmp/crondump')
     neutron_server_stop()
-    put('l3_agent_scheduler.py',
+    put('/etc/fabuloso/repos/havana/l3_agent_scheduler.py',
         '/usr/lib/python2.7/dist-packages/neutron/scheduler/'
         'l3_agent_scheduler.py',
         use_sudo=True)
